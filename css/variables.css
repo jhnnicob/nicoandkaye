@@ -1,0 +1,63 @@
+:root {
+  --bg-page: #f5f1e8;
+  --color-surface: #e8e2d5;
+  --color-text: #20231d;
+  --color-muted: #73766a;
+  --color-primary: #424936;
+  --color-accent: #806b55;
+  --color-olive: #78866c;
+  --color-ivory: #f8f3ed;
+  --color-soft: #e9d7c2;
+  --color-line: rgba(32, 35, 29, 0.15);
+  --shadow-soft: 0 18px 45px rgba(24, 20, 15, 0.12);
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-body: "DM Sans", sans-serif;
+  --font-script: "Parisienne", cursive;
+  --page-shell: min(1200px, calc(100% - 2rem));
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-page);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}

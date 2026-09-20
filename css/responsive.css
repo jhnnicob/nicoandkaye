@@ -1,0 +1,77 @@
+@media (min-width: 768px) {
+  .page-shell {
+    width: min(1200px, calc(100% - 4rem));
+  }
+
+  .hero-inner {
+    grid-template-columns: 1.3fr 0.7fr;
+    align-items: end;
+    padding-bottom: 4.25rem;
+  }
+
+  .hero-copy {
+    max-width: 38rem;
+  }
+
+  .story-layout {
+    gap: 4rem;
+  }
+
+  .story-copy {
+    padding-right: 1rem;
+  }
+
+  .section-shell {
+    padding: 6rem 0;
+  }
+
+  .details-panel {
+    padding: 4rem 2.5rem;
+  }
+
+  .gallery-header {
+    text-align: center;
+  }
+
+  .gallery-actions {
+    text-align: center;
+  }
+
+  .rsvp-layout {
+    grid-template-columns: 1.1fr 0.9fr;
+  }
+}
+
+@media (max-width: 767px) {
+  .brand {
+    letter-spacing: 0.25em;
+  }
+
+  .hero-title {
+    max-width: 10ch;
+  }
+
+  .scroll-cue {
+    display: none;
+  }
+
+  .story-photo-frame {
+    max-width: 20rem;
+  }
+
+  .closing-message {
+    letter-spacing: 0.08em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

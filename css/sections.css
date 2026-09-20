@@ -1,0 +1,28 @@
+.story,
+.gallery,
+.rsvp {
+  background: var(--bg-page);
+}
+
+.story,
+.gallery,
+.rsvp,
+.details {
+  border-top: 1px solid rgba(32, 35, 29, 0.05);
+}
+
+.story {
+  background: #f7f2ea;
+}
+
+.details {
+  background: linear-gradient(180deg, #f5efe8, #e8e1d6);
+}
+
+.gallery {
+  background: #f6f1ea;
+}
+
+.rsvp {
+  background: #e7dccd;
+}
