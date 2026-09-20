@@ -59,7 +59,14 @@
 
           <div class="story-right">
             <div class="photo-frame">
-              <img src="assets/story/story_1.jpg" alt="Nico and Kaye together" />
+              <svg class="story-photo" viewBox="0 0 1000 700" role="img" aria-label="Nico and Kaye together">
+                <defs>
+                  <clipPath id="story-photo-shape">
+                    <path d="M36 244 C66 92 230 20 510 36 C762 8 942 112 968 292 C990 472 860 628 638 654 C426 682 168 624 54 486 C18 430 16 326 36 244 Z" />
+                  </clipPath>
+                </defs>
+                <image href="assets/story/story_1.jpg" width="1000" height="700" preserveAspectRatio="xMidYMid slice" clip-path="url(#story-photo-shape)" />
+              </svg>
             </div>
             <p class="story-side-note" aria-hidden="true">SAME PEOPLE<br />SAME LAKE<br />NEW CHAPTER</p>
           </div>
@@ -124,9 +131,13 @@
 
         <section class="rsvp section" id="rsvp">
           <div class="rsvp-note">See you at Caliraya! ❤</div>
+          <div class="rsvp-botanical" aria-hidden="true">
+            <span class="leaf leaf-1"></span><span class="leaf leaf-2"></span><span class="leaf leaf-3"></span>
+            <span class="leaf leaf-4"></span><span class="leaf leaf-5"></span><span class="leaf leaf-6"></span>
+          </div>
           <div class="rsvp-copy">
             <p class="section-kicker">RSVP</p>
-            <h2>Let Us Know<br />If You Can Join</h2>
+            <h3>Let Us Know<br />If You Can Join</h3>
             <p>We'd be so happy to celebrate with you!</p>
             <p>Please confirm your attendance on or before January 10, 2027.</p>
             <button class="cta-btn dark" type="button">RSVP NOW →</button>
