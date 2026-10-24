@@ -13,7 +13,7 @@
   <body>
     <div class="page-shell">
       <header class="topbar">
-        <div class="brand">N|K</div>
+        <div class="brand">N | K</div>
         <nav class="main-nav" aria-label="Main navigation">
           <a href="#">Home</a>
           <a href="#story">Our Story</a>
@@ -27,11 +27,30 @@
         <section class="hero">
           <div class="hero-copy">
             <p class="eyebrow">Together with our families,<br />we invite you to celebrate<br />our wedding.</p>
-            <h1>Nico &amp; Kaye</h1>
-            <div class="event-meta">
-              <p>JANUARY 29, 2027 &nbsp;|&nbsp; 3:00 PM</p>
-              <p>DEL LAGOS EVENT PLACE</p>
-              <p>CALIRAYA, LAGUNA</p>
+            <h1>Nico <span>&amp;</span> Kaye</h1>
+            <div class="hero-date-wrap" aria-label="Wedding date">
+              <span></span>
+              <time datetime="2027-01-29T15:00:00+08:00">01 . 29 . 2027</time>
+              <span></span>
+            </div>
+            <p class="hero-countdown-caption">Counting Down to Forever</p>
+            <div class="event-meta" aria-live="polite" aria-label="Time remaining until the wedding">
+              <div class="event-meta__countdown-item">
+                <span id="countdown-days">00</span>
+                <small>Days</small>
+              </div>
+              <div class="event-meta__countdown-item">
+                <span id="countdown-hours">00</span>
+                <small>Hours</small>
+              </div>
+              <div class="event-meta__countdown-item">
+                <span id="countdown-minutes">00</span>
+                <small>Minutes</small>
+              </div>
+              <div class="event-meta__countdown-item">
+                <span id="countdown-seconds">00</span>
+                <small>Seconds</small>
+              </div>
             </div>
           </div>
 
@@ -510,5 +529,36 @@
       </main>
     </div>
     <script src="js/rsvp.js" defer></script>
+    <script>
+      (function () {
+        const targetDate = new Date('2027-01-29T15:00:00+08:00');
+        const daysEl = document.getElementById('countdown-days');
+        const hoursEl = document.getElementById('countdown-hours');
+        const minutesEl = document.getElementById('countdown-minutes');
+        const secondsEl = document.getElementById('countdown-seconds');
+
+        if (!daysEl || !hoursEl || !minutesEl || !secondsEl) return;
+
+        const pad = (value) => String(value).padStart(2, '0');
+
+        const updateCountdown = () => {
+          const difference = Math.max(0, targetDate.getTime() - Date.now());
+
+          const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
+          const minutes = Math.floor((difference / (1000 * 60)) % 60);
+          const seconds = Math.floor((difference / 1000) % 60);
+
+          daysEl.textContent = pad(days);
+          hoursEl.textContent = pad(hours);
+          minutesEl.textContent = pad(minutes);
+          secondsEl.textContent = pad(seconds);
+        };
+
+        updateCountdown();
+        const timer = window.setInterval(updateCountdown, 1000);
+        window.addEventListener('beforeunload', () => window.clearInterval(timer));
+      })();
+    </script>
   </body>
 </html>
