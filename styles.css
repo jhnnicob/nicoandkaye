@@ -4862,3 +4862,36 @@ body.gallery-lightbox-open {
   #guest-policy.dress-code-editorial .dc-palette li > span:last-child { font-size: .7rem; }
   #guest-policy.dress-code-editorial .dc-inspiration > figcaption { font-size: .8rem; }
 }
+
+/* Entourage: invitation typography on the shared website background. */
+#entourage {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: clamp(4rem, 9vw, 6rem) 1.25rem clamp(5rem, 10vw, 7rem);
+  background: var(--bg, #fdf5de);
+  color: #493d31;
+  font-family: var(--serif);
+}
+#entourage .entourage-inner { position: relative; z-index: 1; width: min(100%, 52rem); margin-inline: auto; }
+#entourage .entourage-header { margin-bottom: 2.7rem; text-align: center; }
+#entourage .entourage-header h2 { margin: 0; font-size: clamp(2.6rem, 10vw, 4.4rem); font-weight: 500; line-height: 1.08; letter-spacing: .035em; text-transform: uppercase; }
+#entourage .entourage-header > p { margin: 1.3rem 0 0; font-family: var(--script); font-size: clamp(1.8rem, 6.7vw, 3rem); line-height: 1.3; }
+#entourage h3 { margin: 0 0 .8rem; font-size: clamp(1.12rem, 3.8vw, 1.45rem); font-weight: 600; line-height: 1.35; }
+#entourage ul { margin: 0; padding: 0; list-style: none; }
+#entourage li { font-size: clamp(1.05rem, 3.8vw, 1.4rem); line-height: 1.65; overflow-wrap: anywhere; }
+#entourage .entourage-officiant,
+#entourage .entourage-flower-girl { text-align: center; }
+#entourage .entourage-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(1rem, 5vw, 5rem); margin-top: 2.5rem; }
+#entourage .entourage-group { min-width: 0; }
+#entourage .entourage-sponsors { margin-top: 2.5rem; }
+#entourage .entourage-sponsors h3 { margin-bottom: 1.2rem; text-align: center; text-transform: uppercase; letter-spacing: .06em; }
+#entourage .entourage-sponsors ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: clamp(1rem, 5vw, 5rem); }
+#entourage .entourage-flower-girl { margin-top: 3rem; }
+#entourage .entourage-botanical { position: absolute; top: -1.2rem; left: -1.5rem; width: clamp(7rem, 22vw, 15rem); height: auto; fill: none; stroke: #736a52; stroke-width: 1; opacity: .23; pointer-events: none; }
+@media (min-width: 768px) {
+  #entourage { padding-inline: 3rem; }
+  #entourage .entourage-pair,
+  #entourage .entourage-sponsors { margin-top: 3.2rem; }
+  #entourage .entourage-flower-girl { margin-top: 3.8rem; }
+}
