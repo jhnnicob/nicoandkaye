@@ -618,7 +618,7 @@ button { font: inherit; }
 .closing {
   position: relative;
   min-height: 36rem;
-  background: url('assets/closing/closing_bg_1.png') center center / cover no-repeat;
+  background: url('assets/footer2.jpg') center center / cover no-repeat;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1072,7 +1072,7 @@ button { font: inherit; }
 
   .closing {
     min-height: 26rem;
-    background-image: url("assets/closing/closing_bg_1.png");
+    background-image: url("assets/footer2.jpg");
   }
 
   .closing-content {
@@ -4746,10 +4746,10 @@ body.gallery-lightbox-open {
 #guest-policy.dress-code-editorial .dc-header > p {
   margin: 1.35rem 0 2.4rem;
   color: #8b785e;
-  font-family: var(--script);
-  font-size: clamp(1.8rem, 7.4vw, 2.35rem);
+  font-family: var(--sans);
+  font-size: 1rem;
   font-weight: 400;
-  line-height: 1.22;
+  line-height: 1.8;
 }
 #guest-policy.dress-code-editorial .dc-feature-stage { position: relative; isolation: isolate; }
 #guest-policy.dress-code-editorial .dress-code__sprig {
@@ -4967,3 +4967,18 @@ body.gallery-lightbox-open {
 }
 #faqs .faq-tips li + li { margin-top: .4rem; }
 #faqs .faq-tips li::marker { color: #9c845e; }
+
+/* Matching leaf flourish closes the Entourage section below the final name. */
+#entourage .entourage-ending {
+  position: absolute;
+  right: -.6rem;
+  bottom: -.4rem;
+  width: clamp(7rem, 22vw, 15rem);
+  height: auto;
+  margin: 0;
+  fill: none;
+  stroke: #736a52;
+  stroke-width: 1;
+  opacity: .23;
+  pointer-events: none;
+}
