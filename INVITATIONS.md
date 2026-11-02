@@ -24,7 +24,7 @@ Check the recipient name, illustration, role heading, complete letter, original 
 
 ## Google Sheets response API and test invitation
 
-`responseApi.url` in `js/invitation-data.js` contains the Apps Script `/exec` endpoint supplied by the couple. Only records with an explicit `responseInvitationId` can submit to it. All eight real invitations are mapped to the exact column-F IDs supplied in the tracker. Their existing invitation links and letters are unchanged. Pastor Ano in the tracker maps to Pastor Año on the invitation; the API matches by ID, not name.
+`responseApi.url` in `js/invitation-data.js` contains the Apps Script `/exec` endpoint supplied by the couple. Only records with an explicit `responseInvitationId` can submit to it. All eight real invitations are mapped to the exact column-F IDs supplied in the tracker. Their existing invitation links and letters are unchanged. Pastor Año in the tracker maps to Pastor Año on the invitation; the API matches by ID, not name.
 
 Test link on the requested LAN server:
 
