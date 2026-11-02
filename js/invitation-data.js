@@ -1,7 +1,8 @@
 // PUBLIC STATIC INVITATIONS, NOT AUTHENTICATION.
 // All records can be inspected by visitors. Random identifiers only select a letter.
 // Do not add confidential material. Do not publish a recipient directory.
-// Configure responseContact.address to enable email drafts; nothing is sent or saved here.
+// responseApi submits only records with an explicit responseInvitationId mapping.
+// responseContact remains an optional email fallback when no API URL is configured.
 window.WEDDING_INVITATIONS = {
   "responseContact": {
     "method": "email",
@@ -17,7 +18,8 @@ window.WEDDING_INVITATIONS = {
       "sender": "Nico",
       "designVariant": "bow-tie",
       "urlIdentifier": "q3fBiR90FGeKRWxEDip_iqao",
-      "responseQuestion": "Will you be my Best Man?"
+      "responseQuestion": "Will you be my Best Man?",
+      "responseInvitationId": "01569164-62fc-4463-b976-fae2b0671b1e-e8602325-b26b-4554-8e69-40f6dbfcb152"
     },
     "cBCTPma0Cv1KoGVzz2JM5IIr": {
       "id": "9669bfa7-90f6-4c05-8ac3-99cf1b16b562",
@@ -28,7 +30,8 @@ window.WEDDING_INVITATIONS = {
       "sender": "Kaye",
       "designVariant": "emerald-dress",
       "urlIdentifier": "cBCTPma0Cv1KoGVzz2JM5IIr",
-      "responseQuestion": "Will you be my Maid of Honor?"
+      "responseQuestion": "Will you be my Maid of Honor?",
+      "responseInvitationId": "33c2e256-30da-47a8-b4b6-0e153cfdac2f-05cc50c5-1ff0-44bc-9e68-5a50c2990cbd"
     },
     "uR-P5pIZNYKYV1Ar4GYL3DFO": {
       "id": "5f0debbb-6f48-407a-bcd3-ece403ecc5dc",
@@ -39,7 +42,8 @@ window.WEDDING_INVITATIONS = {
       "sender": "Kaye",
       "designVariant": "bouquet",
       "urlIdentifier": "uR-P5pIZNYKYV1Ar4GYL3DFO",
-      "responseQuestion": "Will you be my Bridesmaid?"
+      "responseQuestion": "Will you be my Bridesmaid?",
+      "responseInvitationId": "8c6486d3-6930-4fbb-8243-3b88555118e2-2f7f9c2d-429f-471a-927a-2fcf98634a0b"
     },
     "cLvfIU0jdiLZ08M9BowVFmOE": {
       "id": "83a99492-6167-4e62-a2a9-5518d6318491",
@@ -50,7 +54,8 @@ window.WEDDING_INVITATIONS = {
       "sender": "Nico & Kaye",
       "designVariant": "rings-olive",
       "urlIdentifier": "cLvfIU0jdiLZ08M9BowVFmOE",
-      "responseQuestion": "Will you be our Principal Sponsor?"
+      "responseQuestion": "Will you be our Principal Sponsor?",
+      "responseInvitationId": "340026f0-e921-4242-8c8a-f1b79769eb9c-fdd2754c-f9de-473c-b902-b8952f41712a"
     },
     "q7ze7WkAQSSQvvPebAD-ExZv": {
       "id": "db492e99-04d1-402e-aa4d-084f7ea9ed0b",
@@ -61,7 +66,8 @@ window.WEDDING_INVITATIONS = {
       "sender": "Kaye & Nico",
       "designVariant": "rings-flowers",
       "urlIdentifier": "q7ze7WkAQSSQvvPebAD-ExZv",
-      "responseQuestion": "Will you be our Principal Sponsor?"
+      "responseQuestion": "Will you be our Principal Sponsor?",
+      "responseInvitationId": "c7ec1b1a-47c7-4788-ba7f-2f8735ba2189-b00502d2-48e7-4b40-beef-65af12a52cf4"
     },
     "XndCjGL6lxy7TJ5V5F5sijjw": {
       "id": "07823408-e93d-4889-8029-b15e1abc2941",
@@ -72,7 +78,8 @@ window.WEDDING_INVITATIONS = {
       "sender": "Kaye & Nico",
       "designVariant": "rings-botanical",
       "urlIdentifier": "XndCjGL6lxy7TJ5V5F5sijjw",
-      "responseQuestion": "Will you be our Principal Sponsor?"
+      "responseQuestion": "Will you be our Principal Sponsor?",
+      "responseInvitationId": "62177e37-3a95-4078-9d48-09d9ed04cc05-3a818266-8588-443c-905d-876e8e565adb"
     },
     "gNowmbDAVX5ZQNcjGj7DAPKV": {
       "id": "efece0d3-d01e-48e7-b057-8717bb4f4fd9",
@@ -83,7 +90,8 @@ window.WEDDING_INVITATIONS = {
       "sender": "Kaye & Nico",
       "designVariant": "rings-botanical",
       "urlIdentifier": "gNowmbDAVX5ZQNcjGj7DAPKV",
-      "responseQuestion": "Will you be our Principal Sponsor?"
+      "responseQuestion": "Will you be our Principal Sponsor?",
+      "responseInvitationId": "c17b9066-e9f2-4b01-8dc3-04b16630eec6-ac801c84-0bac-45ef-b5bd-f61ea3d41f4f"
     },
     "VajVtI7uxa_tJCfagX4tb8UX": {
       "id": "49429006-1e79-47c0-9ed9-7dbfe9e318c5",
@@ -98,7 +106,24 @@ window.WEDDING_INVITATIONS = {
       "emphasis": [
         "Ninang and Ninong as principal sponsors",
         "Nico & Kaye"
-      ]
+      ],
+      "responseInvitationId": "a5015e4c-8489-4295-aba7-7358edcc4f88-859eafda-a4e6-4fab-bbe4-9611ab7e5111"
+    },
+    "test-_Vsxx1cjSi4LQxDJ": {
+      "id": "01165cff-90a1-4c98-ba36-fbfe33f6b902",
+      "recipientName": "Test invitation",
+      "role": "Groomsman",
+      "completeLetter": "Dear Test Recipient,\n\nThis is a test of the wedding role response integration. It does not represent an invitation for a real recipient.\n\nUse a dedicated test row in the Wedding Role Responses sheet before submitting a response.\n\nTest sender",
+      "signature": "Test sender",
+      "sender": "Test sender",
+      "designVariant": "bow-tie",
+      "urlIdentifier": "test-_Vsxx1cjSi4LQxDJ",
+      "responseQuestion": "Would you like to test accepting or declining this role?",
+      "responseInvitationId": "test-wedding-2026",
+      "isTest": true
     }
+  },
+  "responseApi": {
+    "url": "https://script.google.com/macros/s/AKfycbzWx3lZB32C6YHdn5RWeEB3J1om33u7g-cZORQXqplpmVh2t2OTpx-MVtqTlEKdunoz/exec"
   }
 };

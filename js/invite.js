@@ -19,7 +19,8 @@
   }
   const text = (id, value) => { document.getElementById(id).textContent = value; };
   document.body.dataset.design = record.designVariant;
-  text('envelope-recipient', record.recipientName);
+  text('invitation-for', `For ${record.recipientName}`);
+  document.getElementById('invitation-for').hidden = false;
   text('letter-title', parts[0]);
   text('invitation-question', record.responseQuestion);
 
@@ -103,6 +104,85 @@
     }, reducedMotion ? 0 : 850);
   });
 
+  const acceptButton = document.getElementById('invitation-accept');
+  const declineButton = document.getElementById('invitation-decline');
+  const responseArea = document.querySelector('.invitation-response');
+  const responseButtons = [acceptButton, declineButton];
+  const apiUrl = typeof data.responseApi?.url === 'string' ? data.responseApi.url.trim() : '';
+  if (apiUrl) {
+    let validEndpoint = false;
+    try {
+      const endpoint = new URL(apiUrl);
+      validEndpoint = endpoint.protocol === 'https:' && endpoint.hostname === 'script.google.com' &&
+        /^\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(endpoint.pathname) && !endpoint.search && !endpoint.hash;
+    } catch { /* Leave responses disabled for an invalid configuration. */ }
+    const sheetId = typeof record.responseInvitationId === 'string' ? record.responseInvitationId.trim() : '';
+    if (!validEndpoint) {
+      text('invitation-contact-note', 'Response service configuration needs attention. Please contact the sender.');
+      return;
+    }
+    if (!sheetId) {
+      // Real recipients stay disconnected until explicitly mapped to their sheet row.
+      text('invitation-contact-note', '');
+      return;
+    }
+    text('invitation-contact-note', record.isTest
+      ? ''
+      : 'Choose a response to send your wedding role reply.');
+    responseButtons.forEach(button => { button.disabled = false; });
+    let sending = false;
+    let finished = false;
+    const submitResponse = async (response) => {
+      if (sending || finished) return;
+      sending = true;
+      responseButtons.forEach(button => { button.disabled = true; });
+      responseArea.setAttribute('aria-busy', 'true');
+      text('invitation-response-status', 'Sending your response...');
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), 20000);
+      try {
+        const result = await fetch(apiUrl, {
+          method: 'POST',
+          mode: 'cors',
+          credentials: 'omit',
+          redirect: 'follow',
+          headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+          body: JSON.stringify({ invitationId: sheetId, response }),
+          signal: controller.signal,
+        });
+        if (!result.ok) throw new Error('Unconfirmed submission');
+        const payload = await result.json();
+        if (payload?.success === true) {
+          finished = true;
+          text('invitation-response-status', response === 'Accepted'
+            ? `${record.recipientName}, thank you! Your acceptance has been recorded.`
+            : `${record.recipientName}, thank you for letting us know. Your decline has been recorded.`);
+        } else if (payload?.success === false && payload.message === 'Invitation already answered') {
+          finished = true;
+          text('invitation-response-status', 'This invitation has already been answered. Please contact the sender if you need to change or confirm the recorded response.');
+        } else if (payload?.success === false && payload.message === 'Invitation not found') {
+          text('invitation-response-status', record.isTest
+            ? 'Test invitation not found in the sheet. Add the dedicated test row using the ID in INVITATIONS.md and set its response to Pending.'
+            : 'Your invitation could not be matched to the response sheet. Please contact the sender.');
+          responseButtons.forEach(button => { button.disabled = false; });
+        } else {
+          throw new Error('Unconfirmed submission');
+        }
+      } catch {
+        // The POST may have reached the sheet even if its response was blocked or lost.
+        finished = true;
+        text('invitation-response-status', 'We could not confirm whether your response was saved. Please contact the sender to check before trying again.');
+      } finally {
+        window.clearTimeout(timeout);
+        sending = false;
+        responseArea.removeAttribute('aria-busy');
+      }
+    };
+    acceptButton.addEventListener('click', () => void submitResponse('Accepted'));
+    declineButton.addEventListener('click', () => void submitResponse('Declined'));
+    return;
+  }
+
   const contact = data.responseContact;
   const address = typeof contact?.address === 'string' ? contact.address.trim() : '';
   const configured = contact?.method === 'email' && /^[a-zA-Z0-9.!$'*+\/=_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+$/.test(address);
@@ -115,9 +195,10 @@
     const decision = response === 'accept' ? 'accept' : 'decline';
     const subject = `Wedding role reply: ${record.role} - ${record.recipientName}`;
     const body = `Hello ${record.sender},\n\nI would like to ${decision} your invitation.\nRole: ${record.role}\nFrom: ${record.recipientName}\n\nThis is my role response; my wedding attendance RSVP is separate.`;
-    link.href = `mailto:${encodeURIComponent(address)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    link.removeAttribute('aria-disabled');
+    const mailto = `mailto:${encodeURIComponent(address)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    link.disabled = false;
     link.addEventListener('click', () => {
+      window.location.href = mailto;
       text('invitation-response-status', `${record.recipientName}, your email app may open with your ${response === 'accept' ? 'acceptance' : 'decline'} message. Please send it there. Your response has not been recorded by this website.`);
     });
   });

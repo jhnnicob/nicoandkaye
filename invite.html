@@ -17,6 +17,8 @@
     <a class="invitation-back" href="index.html">&larr; Nico &amp; Kaye's wedding</a>
     <svg class="invitation-sprig" viewBox="0 0 120 180" aria-hidden="true"><path d="M15 174C39 123 62 64 108 10M38 120C16 116 10 98 13 83c18 3 29 17 25 37Zm20-40c-5-20 1-37 16-48 7 20 1 37-16 48Zm-1 9c23-1 38 10 42 27-22 3-38-6-42-27Zm25-40c0-21 9-34 26-39 2 20-8 34-26 39Z" /></svg>
     <header class="invitation-intro">
+      <h1>A Special Invitation</h1>
+      <p id="invitation-for" hidden></p>
     </header>
     <section class="invitation-error" id="invitation-error" aria-labelledby="invitation-error-title" hidden>
       <h2 id="invitation-error-title">We couldn't find your invitation</h2>
@@ -28,7 +30,7 @@
           <div class="invitation-envelope-paper" aria-hidden="true"></div>
           <div class="invitation-envelope-pocket" aria-hidden="true"></div>
           <div class="invitation-envelope-flap" aria-hidden="true"></div>
-          <div class="invitation-envelope-address"><h2 id="envelope-recipient"></h2><span class="invitation-envelope-seal" aria-hidden="true">N &amp; K</span></div>
+          <div class="invitation-envelope-address"><span class="invitation-envelope-seal" aria-hidden="true">N &amp; K</span></div>
         </div>
         <button class="invitation-button" id="invitation-open" type="button" aria-expanded="false" aria-controls="invitation-letter">Open Your Letter</button>
       </section>
@@ -43,8 +45,8 @@
           <h3 id="invitation-question"></h3>
           <p class="invitation-contact-note" id="invitation-contact-note"></p>
           <div class="invitation-actions">
-            <a class="invitation-button" id="invitation-accept" aria-disabled="true">Yes, I'd be honored</a>
-            <a class="invitation-button invitation-button-secondary" id="invitation-decline" aria-disabled="true">I'm not available</a>
+            <button class="invitation-button" id="invitation-accept" type="button" disabled>Yes, I'd be honored</button>
+            <button class="invitation-button invitation-button-secondary" id="invitation-decline" type="button" disabled>I'm not available</button>
           </div>
           <p class="invitation-response-status" id="invitation-response-status" role="status" aria-live="polite"></p>
           <p class="invitation-rsvp-note">This reply is about your wedding role. Please submit your attendance separately through the <a href="index.html#rsvp">wedding RSVP form</a>.</p>
