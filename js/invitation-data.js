@@ -65,9 +65,9 @@ window.WEDDING_INVITATIONS = {
     },
     "XndCjGL6lxy7TJ5V5F5sijjw": {
       "id": "07823408-e93d-4889-8029-b15e1abc2941",
-      "recipientName": "Pastor Ano",
+      "recipientName": "Pastor Año",
       "role": "Principal Sponsor",
-      "completeLetter": "Dear Pastor Ano,\n\nFrom the very beginning of this journey, you have been one of the people I turned to for guidance and prayer. When Nico first asked me out on a date, you were among the first people I consulted. Through every season of our relationship, you have faithfully prayed for us, encouraged us, and pointed us toward God's will.\n\nAs our spiritual father, you have helped shape our faith and reminded us to keep God at the center of our relationship. Because of this, it would be a great honor for us to have you take on another fatherly role in our lives.\n\nPastor, would you bless us by being our Ninong and one of our principal sponsors as we begin this new chapter together?\n\nWith sincere love and appreciation,\nKaye & Nico",
+      "completeLetter": "Dear Pastor Año,\n\nFrom the very beginning of this journey, you have been one of the people I turned to for guidance and prayer. When Nico first asked me out on a date, you were among the first people I consulted. Through every season of our relationship, you have faithfully prayed for us, encouraged us, and pointed us toward God's will.\n\nAs our spiritual father, you have helped shape our faith and reminded us to keep God at the center of our relationship. Because of this, it would be a great honor for us to have you take on another fatherly role in our lives.\n\nPastor, would you bless us by being our Ninong and one of our principal sponsors as we begin this new chapter together?\n\nWith sincere love and appreciation,\nKaye & Nico",
       "signature": "With sincere love and appreciation,\nKaye & Nico",
       "sender": "Kaye & Nico",
       "designVariant": "rings-botanical",
