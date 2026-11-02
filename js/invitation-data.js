@@ -89,12 +89,16 @@ window.WEDDING_INVITATIONS = {
       "id": "49429006-1e79-47c0-9ed9-7dbfe9e318c5",
       "recipientName": "Ninang Ethel and Ninong Michael",
       "role": "Principal Sponsors",
-      "completeLetter": "Dear Ninang Ethel and Ninong Michael,\n\nAs I prepare to marry the love of my life, I look back with gratitude at the people God used to guide and shape me growing up. Ninang Ethel, you have been one of those people.\n\nYou have witnessed parts of my childhood and journey through the years, and your presence in my life has been a blessing. Now that I am entering a new chapter, Kaye and I would be deeply honored to have you and Ninong Michael continue to be part of our journey.\n\nWith humble hearts, we would like to ask if you would be our Ninang and Ninong and one of our principal sponsors as we begin our life together as husband and wife.\n\nHaving your love, prayers, guidance, and support on our wedding day would mean so much to us.\n\nWith love and gratitude,\nNico & Kaye",
+      "completeLetter": "Dear Ninang Ethel and Ninong Michael,\n\nAs I prepare to marry Kaye, I can't help but look back and feel grateful for the people who have been part of my life.\n\nNinang Ethel, you've known me since I was young, and although we don't get to talk as often, you've always held a special place in my life.\n\nNow that Kaye and I are about to begin a new chapter together, we would love for you and Ninong Michael to be part of this special moment.\n\nWe would like to ask if you would be our Ninang and Ninong as principal sponsors on our wedding day.\n\nIt would mean so much to us to have you there to witness our marriage and to share your prayers and guidance as we begin our life together.\n\nWith love and gratitude,\nNico & Kaye",
       "signature": "With love and gratitude,\nNico & Kaye",
       "sender": "Nico & Kaye",
       "designVariant": "rings-ivory",
       "urlIdentifier": "VajVtI7uxa_tJCfagX4tb8UX",
-      "responseQuestion": "Will you be our Principal Sponsor?"
+      "responseQuestion": "Will you be our Principal Sponsor?",
+      "emphasis": [
+        "Ninang and Ninong as principal sponsors",
+        "Nico & Kaye"
+      ]
     }
   }
 };

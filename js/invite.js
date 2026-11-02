@@ -38,6 +38,27 @@
   else art = branch + rings + (record.designVariant === 'rings-flowers' ? flowers : '');
   document.getElementById('letter-illustration').innerHTML = `<svg viewBox="0 0 180 120" focusable="false">${art}</svg>`;
 
+  // Optional emphasis is rendered as text and strong nodes, never HTML.
+  const appendLetterText = (element, value) => {
+    const phrases = Array.isArray(record.emphasis)
+      ? record.emphasis.filter(phrase => typeof phrase === 'string' && phrase.length > 0) : [];
+    let remaining = value;
+    while (remaining) {
+      const matches = phrases.map(phrase => ({ phrase, index: remaining.indexOf(phrase) }))
+        .filter(match => match.index >= 0).sort((a, b) => a.index - b.index);
+      if (!matches.length) {
+        element.appendChild(document.createTextNode(remaining));
+        break;
+      }
+      const { phrase, index } = matches[0];
+      element.appendChild(document.createTextNode(remaining.slice(0, index)));
+      const strong = document.createElement('strong');
+      strong.textContent = phrase;
+      element.appendChild(strong);
+      remaining = remaining.slice(index + phrase.length);
+    }
+  };
+
   const copy = document.getElementById('letter-copy');
   parts.slice(1, -1).forEach(paragraph => {
     const lines = paragraph.split('\n');
@@ -51,7 +72,7 @@
       copy.appendChild(list);
     } else {
       const p = document.createElement('p');
-      p.textContent = paragraph;
+      appendLetterText(p, paragraph);
       copy.appendChild(p);
     }
   });
@@ -62,7 +83,7 @@
   signoff.textContent = signatureLines.slice(0, -1).join('\n');
   const signer = document.createElement('span');
   signer.className = 'invitation-signer';
-  signer.textContent = signatureLines[signatureLines.length - 1];
+  appendLetterText(signer, signatureLines[signatureLines.length - 1]);
   signature.append(signoff, document.createTextNode('\n'), signer);
   document.getElementById('invitation-experience').hidden = false;
 
