@@ -19,7 +19,7 @@
   }
   const text = (id, value) => { document.getElementById(id).textContent = value; };
   document.body.dataset.design = record.designVariant;
-  text('invitation-for', `For ${record.recipientName}`);
+  text('invitation-for', record.recipientName);
   document.getElementById('invitation-for').hidden = false;
   text('letter-title', parts[0]);
   text('invitation-question', record.responseQuestion);
