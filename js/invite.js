@@ -20,7 +20,6 @@
   const text = (id, value) => { document.getElementById(id).textContent = value; };
   document.body.dataset.design = record.designVariant;
   text('envelope-recipient', record.recipientName);
-  text('letter-role', record.role);
   text('letter-title', parts[0]);
   text('invitation-question', record.responseQuestion);
 
@@ -88,7 +87,7 @@
   const configured = contact?.method === 'email' && /^[a-zA-Z0-9.!$'*+\/=_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+$/.test(address);
   text('invitation-contact-note', configured
     ? 'Choose a reply to prepare an email. Review it and press Send in your email app. This website does not send or save your response.'
-    : 'Email replies are not configured yet. Please contact the sender directly to share your response. No response is sent or saved here.');
+    : '');
   ['accept', 'decline'].forEach(response => {
     const link = document.getElementById(`invitation-${response}`);
     if (!configured) return;
