@@ -636,7 +636,7 @@ button { font: inherit; }
   z-index: 1;
   text-align: center;
   color: #f7f2eb;
-  padding: 5rem var(--content-pad);
+  padding: 10px var(--content-pad);
 }
 
 .light {
@@ -662,7 +662,7 @@ button { font: inherit; }
 }
 
 .closing-monogram {
-  margin-top: 0.4rem;
+  margin-top: calc(3.6rem + 80px);
   font-family: var(--serif);
   font-size: 1.6rem;
   letter-spacing: 0.2em;
@@ -1076,7 +1076,7 @@ button { font: inherit; }
   }
 
   .closing-content {
-    padding: 4rem var(--content-pad);
+    padding: 10px var(--content-pad);
   }
 
   .closing h2 {
@@ -4983,22 +4983,7 @@ body.gallery-lightbox-open {
   pointer-events: none;
 }
 
-/* Keep Dress Code artwork and all five swatches in one row on mobile. */
-@media (max-width: 767px) {
-  #guest-policy.dc-reference .dc-reference-board {
-    grid-template-columns: minmax(0, .8fr) minmax(0, 2.7fr);
-    align-items: center;
-    gap: .65rem;
-  }
-  #guest-policy.dc-reference .dc-reference-outfits { width: 100%; }
-  #guest-policy.dc-reference .dc-reference-palette { gap: .3rem; }
-  #guest-policy.dc-reference .dc-reference-swatch { margin-bottom: .45rem; }
-  #guest-policy.dc-reference .dc-reference-palette li > span:not(.dc-reference-swatch) {
-    font-size: clamp(.55rem, 2vw, .75rem);
-    letter-spacing: 0;
-    overflow-wrap: anywhere;
-  }
-}
+
 
 /* Dress Code botanical framing: decoration only; original layout stays intact. */
 #guest-policy.dc-reference {
