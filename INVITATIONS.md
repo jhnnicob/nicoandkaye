@@ -1,10 +1,10 @@
 # Personalized static invitations
 
-Eight real invitations are configured in `js/invitation-data.js` using the complete letters supplied by the couple. Shared sponsor invitations are single records. One separate, clearly labeled test invitation has been added for Apps Script response testing; it is not a real recipient.
+Sixteen real invitations are configured in `js/invitation-data.js` using the letters supplied by the couple. The original eight retain their existing URLs, signatures, questions, and response IDs; eight additional letters open for review while awaiting response mappings. Shared sponsor invitations are single records. One separate, clearly labeled test invitation has been added for Apps Script response testing; it is not a real recipient.
 
 ## Privacy and publication
 
-This is a public static page, not secure authentication. All names, letters, signatures, and the configured reply address can be downloaded from the public JavaScript data file once deployed. Random URL identifiers only select a letter. `noindex` and absence from navigation do not guarantee privacy. Do not add confidential information. There is no public on-page recipient directory or index of invitation links.
+This is a public static page, not secure authentication. All names, letters, signatures, and the configured reply address can be downloaded from the public JavaScript data file once deployed. Name-based URL identifiers only select a letter. `noindex` and absence from navigation do not guarantee privacy. Do not add confidential information. There is no public on-page recipient directory or index of invitation links.
 
 Nothing is automatically deployed or submitted on page load. A response is submitted only when a recipient clicks an enabled response button. The existing GitHub Pages workflow publishes repository files when changes are pushed to its deployment branch, including the actual invitation data. Review the letters before publishing.
 
@@ -62,27 +62,22 @@ Role acceptance remains separate from attendance RSVP. The wedding RSVP form is 
 
 ## Add a bridesmaid or groomsman later
 
-Only add a recipient when their actual name and complete letter are supplied. Generate a new random URL identifier locally, for example:
-
-```powershell
-python -c "import secrets; print(secrets.token_urlsafe(18))"
-python -c "import uuid; print(uuid.uuid4())"
-```
+Only add a recipient when their actual name and complete letter are supplied. Choose a unique lowercase name-based ID, using hyphens for shared invitations or multiple words, for example `katrisse` or `cherry-bernabe`.
 
 Add a record inside `invitations`. Copy an existing record's shape and set:
 
-- `id`: a new UUID, not the URL identifier.
+- `id`, `recipientId`, `urlIdentifier`, and the object key: the same unique name-based ID.
 - `recipientName`: actual recipient display name.
 - `role`: `Best Man`, `Maid of Honor`, `Bridesmaid`, `Groomsman`, `Principal Sponsor`, or `Principal Sponsors`.
 - `completeLetter`: the entire exact letter as one string, including greeting, paragraphs, lists, and signature. Use `\n\n` between paragraphs and `\n` within a list or signature. List items begin with `? `.
 - `signature`: the final paragraph exactly as it appears in `completeLetter`, including the closing line and sender.
 - `sender`: the sender name used in the response email greeting.
 - `designVariant`: `bow-tie`, `emerald-dress`, `bouquet`, `rings-olive`, `rings-flowers`, `rings-botanical`, or `rings-ivory`.
-- `urlIdentifier`: the generated identifier, also used as the record's object key.
+- `fullName` and `preferredGreeting`: confirmed identity and greeting; leave unknown full names null rather than guessing.
 - `responseQuestion`: the exact question to show beneath the letter.
 - `responseInvitationId`: the matching column-F ID, required only for Google Sheets responses. Never guess another recipient's ID.
 
-For a future groomsman, use `Groomsman`, `bow-tie`, and the appropriate question. For a future bridesmaid, use `Bridesmaid` and `bouquet`. Keep all content as plain text; the renderer handles paragraphs and bullet lists without interpreting HTML. Do not regenerate existing identifiers, or previously sent links will stop working.
+For a future groomsman, use `Groomsman`, `bow-tie`, and the appropriate question. For a future bridesmaid, use `Bridesmaid` and `bouquet`. Keep all content as plain text; the renderer handles paragraphs and bullet lists without interpreting HTML. When changing an ID, add the old URL identifier to `aliases` with the new ID as its value so previously sent links keep working. Never rename `responseInvitationId`: it must match the existing spreadsheet record.
 
 After deployment, an invitation link uses `https://nicoandkaye.com/invite.html?to=URL_IDENTIFIER`. Deploying is a separate action; this implementation does not publish the links.
 
@@ -90,8 +85,28 @@ After deployment, an invitation link uses `https://nicoandkaye.com/invite.html?t
 
 - `invite.html`: standalone page, noindex metadata, envelope, letter, and response controls.
 - `css/invite.css`: isolated invitation layout, green envelope, artwork styles, and reduced-motion rules.
-- `js/invitation-data.js`: eight complete records and reply-email configuration.
+- `js/invitation-data.js`: sixteen real records, one test record, centralized attire guides, and response configuration.
 - `js/invite.js`: URL lookup, safe plain-text rendering, illustrations, animation, and email drafts.
 - `INVITATIONS.md`: this guide.
 
 Existing wedding sections, navigation, RSVP, gallery, and page-flip scripts are unchanged. No framework, backend, database, image dependency, or authentication service has been added.
+
+## Entourage extension
+
+Both `/invite/?to=RECIPIENT_ID` and previously sent `/invite.html?to=URL_IDENTIFIER` links use the same template. `invite/index.html` forwards the query to `invite.html`; no recipient-specific HTML pages are generated. Unknown, missing, or duplicate IDs show the existing safe fallback.
+
+The eight additional letters reuse the exact wording and signatures supplied in the conversation. Only paragraph spacing and text emphasis are formatted. Arjay retains the Ops Solution / production / deployment / go-live letter. Katrisse and Katrine retain "your kuya Nico"; CJ retains "your Tita K". Zhalan, Katrisse, and Katrine include the supplied gown reminder. AJ and Krysnah do not. Each existing sponsor has the exact supplied P.S. rendered after the original signature without rewriting the original letter.
+
+Each record provides `recipientId`, `recipientName`, `fullName`, `preferredGreeting`, `role`, `completeLetter`, `signature`, `attireGuide`, and `responseInvitationId`, alongside the existing renderer fields. `attireGuides` centralizes instructions and optional image metadata. The supplied attire PNGs were converted to JPEG at quality 90 without changing dimensions; the two images total about 211 KB. Images have alt text, explicit dimensions, lazy loading, and responsive sizing. Sponsor guides remain text-only because no sponsor sample images were supplied. Do not apply bridesmaid or groomsmen imagery to sponsors.
+
+The new letters are configured under the IDs `zhalan`, `katrisse`, `katrine`, `krysnah`, `arjay`, `cj`, `ressie`, and `rjay`. These short IDs are URL selectors, not authentication. Their `responseInvitationId` values are null until the exact matching column-F IDs are supplied. Their letters open, but accept/decline buttons stay disabled and explain how to arrange a response. Do not invent IDs or reuse another recipient's mapping. Existing real recipients and the designated test record retain their response mappings. The API contract and duplicate-submission safeguards are unchanged.
+
+Review `recipientReviews` before sharing: Zhalan's supplied letter is for the Bride Squad, but the public roster lists Leine Zhalan Torres as Flower Girl. The invitation uses only the supplied name Zhalan and does not assume this is the same person. Confirm the identity and role; the public roster is unchanged. CJ's full name and AJ's full-name mapping also require confirmation. Do not infer these mappings from nicknames.
+
+Run `node --test tests/invitations.test.cjs`. Tests use IDs parsed from the actual template, open all 17 records, check letter wording and attire exceptions, and mock API responses. No real responses are submitted. Browser checks were also performed in Chrome at widths 320, 375, 390, 430, 768, and 1440 px: content is centered, no horizontal overflow, images load, and buttons meet 44 px touch height. Safari and Android devices have not been directly tested.
+
+## Consistent name-based IDs
+
+All active records now use the same value for their object key, `id`, `recipientId`, and `urlIdentifier`. The IDs are `paul`, `ate-len`, `aj`, `cherry-bernabe`, `bhubbles`, `pastor-ano`, `emil-susan`, `ethel-michael`, `test`, `zhalan`, `katrisse`, `katrine`, `krysnah`, `arjay`, `cj`, `ressie`, and `rjay`. For example, use `/invite/?to=paul`.
+
+The `aliases` map preserves all previously shared random URL identifiers and the old `katryn` spelling. Aliases resolve directly to one canonical record; letters are not duplicated. Existing `responseInvitationId` values and the API endpoint remain unchanged. These backend IDs are separate from the name-based page selectors and must continue matching the sheet exactly.

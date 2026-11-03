@@ -36,7 +36,7 @@
 .invitation-page .art-bow .art-bow-detail { fill: none; stroke: #b79b61; stroke-width: .7; opacity: .7; }
 .invitation-page .art-gold-line { fill: none; stroke: #b79b61; stroke-width: 1; }
 .invitation-page .art-dress { fill: #175539; stroke: #b79b61; stroke-width: .8; }
-.invitation-page .invitation-greeting { margin: 0 0 1.5rem; color: #354638; font-family: var(--serif); font-size: 1.65rem; line-height: 1.35; overflow-wrap: anywhere; }
+.invitation-page .invitation-greeting { margin: 0 0 1.5rem; color: #354638; font-family: var(--script); font-size: clamp(1.8rem, 6vw, 2.3rem); line-height: 1.4; overflow-wrap: anywhere; }
 .invitation-page .invitation-greeting:focus { outline: none; }
 .invitation-page .invitation-letter-copy p,
 .invitation-page .invitation-letter-copy ul { margin: 0 0 1.25rem; color: #655f52; font-size: .97rem; line-height: 1.95; overflow-wrap: anywhere; }
@@ -82,7 +82,19 @@
 @media (max-width: 767px) {
   .invitation-page .invitation-intro h1 {
     font-size: clamp(1.6rem, 7vw, 3rem);
-    white-space: nowrap;
+    white-space: normal;
     letter-spacing: -.025em;
   }
 }
+
+.invitation-page .invitation-postscript,
+.invitation-page .invitation-attire p { color: #655f52; font-size: 1rem; line-height: 1.9; overflow-wrap: anywhere; white-space: pre-line; }
+.invitation-page .invitation-postscript { margin: 0 0 2rem; }
+.invitation-page .invitation-attire { margin: 0 0 2rem; padding: 1.5rem 0; border-top: 1px solid #ae987055; }
+.invitation-page .invitation-attire h2 { margin: 0; color: #354638; font-family: var(--serif); font-size: 1.8rem; font-weight: 500; }
+.invitation-page .invitation-attire img { width: 100%; max-width: 28rem; height: auto; object-fit: contain; margin: 1.5rem auto 0; }
+.invitation-page .invitation-contact-note:empty { display: none; }
+.invitation-page .invitation-response .invitation-actions { align-items: stretch; }
+.invitation-page .invitation-response .invitation-button { display: flex; align-items: center; justify-content: center; min-height: 3.25rem; width: 100%; }
+.invitation-page .invitation-response .invitation-button:disabled { opacity: 1; cursor: not-allowed; }
+.invitation-page .invitation-letter-copy .invitation-letter-reminder { font-style: italic; }

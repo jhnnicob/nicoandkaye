@@ -4,10 +4,13 @@
   const params = new URLSearchParams(window.location.search);
   const identifier = params.get('to');
   const data = window.WEDDING_INVITATIONS;
-  const record = identifier && params.getAll('to').length === 1 && data?.invitations &&
-    Object.prototype.hasOwnProperty.call(data.invitations, identifier) ? data.invitations[identifier] : null;
-  const valid = record && record.urlIdentifier === identifier &&
-    typeof record.id === 'string' && record.id &&
+  // Older shared links resolve to the same record, without duplicating letters.
+  const canonicalId = identifier && data?.aliases && Object.prototype.hasOwnProperty.call(data.aliases, identifier)
+    ? data.aliases[identifier] : identifier;
+  const record = typeof canonicalId === 'string' && canonicalId && params.getAll('to').length === 1 && data?.invitations &&
+    Object.prototype.hasOwnProperty.call(data.invitations, canonicalId) ? data.invitations[canonicalId] : null;
+  const valid = record && record.urlIdentifier === canonicalId &&
+    record.id === canonicalId && record.recipientId === canonicalId &&
     typeof record.recipientName === 'string' && record.recipientName.trim() && roles.has(record.role) &&
     variants.has(record.designVariant) && typeof record.completeLetter === 'string' && record.completeLetter.trim() &&
     typeof record.signature === 'string' && record.signature.trim() &&
@@ -73,6 +76,7 @@
       copy.appendChild(list);
     } else {
       const p = document.createElement('p');
+      if (paragraph.startsWith('P.S.')) p.className = 'invitation-letter-reminder';
       appendLetterText(p, paragraph);
       copy.appendChild(p);
     }
@@ -86,6 +90,28 @@
   signer.className = 'invitation-signer';
   appendLetterText(signer, signatureLines[signatureLines.length - 1]);
   signature.append(signoff, document.createTextNode('\n'), signer);
+  if (typeof record.postscript === 'string' && record.postscript.trim()) {
+    text('letter-postscript', record.postscript);
+    document.getElementById('letter-postscript').hidden = false;
+  }
+  const attire = record.attireGuide && data.attireGuides &&
+    Object.prototype.hasOwnProperty.call(data.attireGuides, record.attireGuide)
+    ? data.attireGuides[record.attireGuide] : null;
+  if (typeof attire?.instructions === 'string' && attire.instructions.trim()) {
+    text('invitation-attire-copy', attire.instructions);
+    document.getElementById('invitation-attire').hidden = false;
+    if (typeof attire.image === 'string' && /^assets\/[\w/.-]+\.(?:avif|webp|png|jpe?g|svg)$/.test(attire.image) &&
+        !attire.image.split('/').includes('..') && typeof attire.imageAlt === 'string' && attire.imageAlt.trim()) {
+      const image = document.getElementById('invitation-attire-image');
+      image.src = attire.image;
+      image.alt = attire.imageAlt;
+      if (Number.isInteger(attire.imageWidth) && Number.isInteger(attire.imageHeight) && attire.imageWidth > 0 && attire.imageHeight > 0) {
+        image.width = attire.imageWidth;
+        image.height = attire.imageHeight;
+      }
+      image.hidden = false;
+    }
+  }
   document.getElementById('invitation-experience').hidden = false;
 
   const open = document.getElementById('invitation-open');
@@ -123,12 +149,14 @@
     }
     if (!sheetId) {
       // Real recipients stay disconnected until explicitly mapped to their sheet row.
-      text('invitation-contact-note', '');
+      text('invitation-contact-note', 'Please contact Nico & Kaye to arrange your role response.');
+      document.getElementById('invitation-contact-note').hidden = true;
+      responseButtons.forEach(button => {
+        button.setAttribute('aria-describedby', 'invitation-contact-note');
+        button.setAttribute('title', 'Responses are not available yet. Please contact Nico & Kaye.');
+      });
       return;
     }
-    text('invitation-contact-note', record.isTest
-      ? ''
-      : 'Choose a response to send your wedding role reply.');
     responseButtons.forEach(button => { button.disabled = false; });
     let sending = false;
     let finished = false;

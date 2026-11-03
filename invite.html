@@ -17,7 +17,7 @@
     <a class="invitation-back" href="index.html">&larr; Nico &amp; Kaye's wedding</a>
     <svg class="invitation-sprig" viewBox="0 0 120 180" aria-hidden="true"><path d="M15 174C39 123 62 64 108 10M38 120C16 116 10 98 13 83c18 3 29 17 25 37Zm20-40c-5-20 1-37 16-48 7 20 1 37-16 48Zm-1 9c23-1 38 10 42 27-22 3-38-6-42-27Zm25-40c0-21 9-34 26-39 2 20-8 34-26 39Z" /></svg>
     <header class="invitation-intro">
-      <h1>A special invitation for</h1>
+      <h1>A Special Invitation For</h1>
       <p id="invitation-for" hidden></p>
     </header>
     <section class="invitation-error" id="invitation-error" aria-labelledby="invitation-error-title" hidden>
@@ -41,12 +41,18 @@
         <p class="invitation-greeting" id="letter-title" tabindex="-1"></p>
         <div class="invitation-letter-copy" id="letter-copy"></div>
         <p class="invitation-signature" id="letter-signature"></p>
+        <p class="invitation-postscript" id="letter-postscript" hidden></p>
+        <section class="invitation-attire" id="invitation-attire" aria-labelledby="invitation-attire-title" hidden>
+          <h2 id="invitation-attire-title">Your Attire Guide</h2>
+          <p id="invitation-attire-copy"></p>
+          <img id="invitation-attire-image" hidden alt="" loading="lazy" decoding="async" />
+        </section>
         <div class="invitation-response">
           <h3 id="invitation-question"></h3>
           <p class="invitation-contact-note" id="invitation-contact-note"></p>
           <div class="invitation-actions">
-            <button class="invitation-button" id="invitation-accept" type="button" disabled>Yes, I'd be honored</button>
-            <button class="invitation-button invitation-button-secondary" id="invitation-decline" type="button" disabled>I'm not available</button>
+            <button class="invitation-button" id="invitation-accept" type="button" disabled>Accept Invitation</button>
+            <button class="invitation-button invitation-button-secondary" id="invitation-decline" type="button" disabled>Decline Invitation</button>
           </div>
           <p class="invitation-response-status" id="invitation-response-status" role="status" aria-live="polite"></p>
           <p class="invitation-rsvp-note">This reply is about your wedding role. Please submit your attendance separately through the <a href="index.html#rsvp">wedding RSVP form</a>.</p>
