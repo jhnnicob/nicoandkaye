@@ -158,12 +158,14 @@
       validEndpoint = endpoint.protocol === 'https:' && endpoint.hostname === 'script.google.com' &&
         /^\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(endpoint.pathname) && !endpoint.search && !endpoint.hash;
     } catch { /* Leave responses disabled for an invalid configuration. */ }
-    const sheetId = typeof record.responseInvitationId === 'string' ? record.responseInvitationId.trim() : '';
+    // This must be the displayed record's explicit column-F mapping, never its
+    // display name or a test-ID fallback. Older URL aliases resolve above.
+    const currentRecipientId = typeof record.responseInvitationId === 'string' ? record.responseInvitationId.trim() : '';
     if (!validEndpoint) {
       text('invitation-contact-note', 'Response service configuration needs attention. Please contact the sender.');
       return;
     }
-    if (!sheetId) {
+    if (!currentRecipientId) {
       // Real recipients stay disconnected until explicitly mapped to their sheet row.
       text('invitation-contact-note', 'Please contact Nico & Kaye to arrange your role response.');
       document.getElementById('invitation-contact-note').hidden = true;
@@ -191,11 +193,14 @@
           credentials: 'omit',
           redirect: 'follow',
           headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
-          body: JSON.stringify({ type: 'roleResponse', invitationId: sheetId, response }),
+          body: JSON.stringify({ type: 'roleResponse', invitationId: currentRecipientId, response }),
           signal: controller.signal,
         });
         if (!result.ok || result.type === 'opaque') throw new Error('Unconfirmed submission');
         const payload = await result.json();
+        if (payload?.invitationId !== undefined && payload.invitationId !== currentRecipientId) {
+          throw new Error('Acknowledgment belongs to a different invitation');
+        }
         if (payload?.success === true && (payload.type === undefined || payload.type === 'roleResponse')) {
           finished = true;
           text('invitation-response-status', response === 'Accepted'
@@ -209,6 +214,23 @@
             ? 'Test invitation not found in the sheet. Add the dedicated test row using the ID in INVITATIONS.md and set its response to Pending.'
             : 'Your invitation could not be matched to the response sheet. Please contact the sender.');
           responseButtons.forEach(button => { button.disabled = false; });
+        } else if (payload?.success === false) {
+          // Report only known, safe failures, not arbitrary backend exception
+          // text that might contain spreadsheet details or another guest's data.
+          const explanations = {
+            'Invalid existing role status': 'Your invitation has a response status that needs review. Please contact Nico & Kaye.',
+            'Invitation already declined': 'This invitation was previously declined. Please contact Nico & Kaye to update it.',
+            'Duplicate invitation ID in role sheet': 'Your invitation matches more than one record. Please contact Nico & Kaye to resolve it.',
+            'Duplicate RSVP invitation ID found': 'Your attendance has duplicate records that need review. Please contact Nico & Kaye.',
+            'Existing RSVP conflicts with role acceptance': 'Your existing attendance response needs review before we can confirm this invitation. Please contact Nico & Kaye.',
+            'Required worksheet not found': 'The confirmation service needs configuration. Please contact Nico & Kaye.',
+            'Configure RSVP_SPREADSHEET_ID before accepting responses': 'The confirmation service needs configuration. Please contact Nico & Kaye.'
+          };
+          if (!Object.prototype.hasOwnProperty.call(explanations, payload.message)) {
+            throw new Error('Unconfirmed submission');
+          }
+          finished = true;
+          text('invitation-response-status', explanations[payload.message]);
         } else {
           throw new Error('Unconfirmed submission');
         }

@@ -141,3 +141,15 @@ Before sending real invitations, use the designated test recipient only:
 The tracker supplied on November 5, 2026 lists the real recipient IDs as the same name-based values used by the current canonical URLs. All 16 responseInvitationId values were matched to column F, checking the role in column B. This fixes the client sending obsolete UUIDs, which the current sheet could not find. No live API POST or spreadsheet change was made.
 
 The supplied test row is already Accepted. Do not use it expecting a new acceptance to succeed unless the owner deliberately resets only that dedicated test row or supplies a separate pending test ID. The copied CJ line also contains test data outside the normal A-G columns; only the first seven tracker columns were used for mapping, so those trailing cells did not become recipient IDs.
+
+## Recipient-ID submission audit
+
+The local and live invitation configuration were checked without submitting any real response. All 16 real invitation response IDs match the supplied name-based column-F list. The value test-wedding-2026 exists only in the dedicated test configuration record, not as a hardcoded ID or fallback in the production submission handler.
+
+The lookup path is: URL to parameter -> optional legacy alias -> canonical invitation record -> record.responseInvitationId -> currentRecipientId -> the POST invitationId field. The displayed name comes from that same selected record but is never used as the API ID. The request remains exactly `{type: "roleResponse", invitationId: currentRecipientId, response: "Accepted"}`. No weddingRSVP request is sent by the invitation flow.
+
+No current frontend ID-routing root cause was found. Prior old-UUID mappings have already been corrected. A real-recipient-only failure cannot be attributed to a hardcoded test ID based on this code. A failed POST response body or server lookup diagnostics are still needed to identify the remaining backend/record-specific failure. A read-only health GET reported a missing doGet function; that identifies a deployment difference from the supplied complete replacement, but does not by itself establish whether doPost works.
+
+The minimal frontend hardening preserves ID mappings and design. A response containing a different invitationId is rejected instead of confirming the displayed recipient. Known backend failures such as invalid existing status, duplicate IDs, conflicting attendance, and missing backend configuration now show safe, specific explanations. Unknown responses remain unconfirmed and locked; no arbitrary server exceptions or spreadsheet contents are echoed. No backend or sheet records were changed.
+
+Regression tests mock every canonical recipient and all legacy aliases, verify the displayed name and exact outgoing ID, verify that changing a display name cannot change its ID, and verify that a missing mapping cannot fall back to the test ID. Test acknowledgments cannot confirm real recipients, or vice versa. No automated test contacts the deployed endpoint or accepts a real guest.

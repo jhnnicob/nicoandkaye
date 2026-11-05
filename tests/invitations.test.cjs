@@ -177,3 +177,45 @@ test('all sixteen real response IDs exactly match the supplied tracker, with a s
   }
   assert.equal(data.invitations.test.responseInvitationId,'test-wedding-2026');
 });
+
+test('canonical and legacy links submit the displayed recipient ID, never a name or a test fallback',async()=>{
+  const expectedIds={paul:'paul','ate-len':'ate-len',aj:'aj',zhalan:'zhalan',katrisse:'katrisse',katrine:'katrine',krysnah:'krysnah',arjay:'arjay',cj:'cj',ressie:'ressie',rjay:'rjay','cherry-bernabe':'cherry-bernabe',bhubbles:'bhubbles','pastor-ano':'pastor-ano','emil-susan':'emil-susan','ethel-michael':'ethel-michael',test:'test-wedding-2026'};
+  const queries=[...Object.keys(expectedIds).map(id=>[id,id]),...Object.entries(data.aliases)];
+  for(const [query,canonical] of queries){
+    const expected=expectedIds[canonical];assert.ok(expected,canonical);
+    const {node,requests}=render('?to='+encodeURIComponent(query),{payload:{success:true,type:'roleResponse',invitationId:expected}});
+    assert.equal(node('invitation-for').textContent,data.invitations[canonical].recipientName);
+    node('invitation-accept').events.click();await tick();
+    assert.equal(requests.length,1);
+    assert.deepEqual(JSON.parse(requests[0].options.body),{type:'roleResponse',invitationId:expected,response:'Accepted'});
+    if(canonical!=='test')assert.notEqual(JSON.parse(requests[0].options.body).invitationId,'test-wedding-2026');
+    assert.match(node('invitation-response-status').textContent,/wedding role and attendance have been confirmed/);
+  }
+  const renamed=render('?to=paul',{mutate:config=>{config.invitations.paul.recipientName='Different display name';}});
+  renamed.node('invitation-accept').events.click();await tick();
+  assert.equal(JSON.parse(renamed.requests[0].options.body).invitationId,'paul');
+  const missing=render('?to=paul',{mutate:config=>{delete config.invitations.paul.responseInvitationId;}});
+  assert.equal(missing.node('invitation-accept').disabled,true);assert.equal(missing.requests.length,0);
+});
+test('acknowledgment for the test recipient cannot confirm a real recipient, or vice versa',async()=>{
+  for(const [id,wrongId] of [['paul','test-wedding-2026'],['test','paul']]){
+    const {node,requests}=render('?to='+id,{payload:{success:true,type:'roleResponse',invitationId:wrongId}});
+    node('invitation-accept').events.click();await tick();
+    assert.match(node('invitation-response-status').textContent,/could not verify/);
+    assert.doesNotMatch(node('invitation-response-status').textContent,/have been confirmed/);
+    assert.equal(node('invitation-accept').disabled,true);assert.equal(requests.length,1);
+  }
+});
+test('known backend failures are explained without exposing arbitrary server error text',async()=>{
+  for(const message of ['Invalid existing role status','Invitation already declined','Duplicate invitation ID in role sheet','Duplicate RSVP invitation ID found','Existing RSVP conflicts with role acceptance','Required worksheet not found','Configure RSVP_SPREADSHEET_ID before accepting responses']){
+    const {node,requests}=render('?to=paul',{payload:{success:false,type:'roleResponse',message}});
+    node('invitation-accept').events.click();await tick();
+    assert.doesNotMatch(node('invitation-response-status').textContent,/could not verify|have been confirmed/);
+    assert.match(node('invitation-response-status').textContent,/contact Nico & Kaye/);
+    assert.equal(node('invitation-accept').disabled,true);assert.equal(requests.length,1);
+  }
+  const {node}=render('?to=paul',{payload:{success:false,message:'PRIVATE sheet contents and secret configuration'}});
+  node('invitation-accept').events.click();await tick();
+  assert.doesNotMatch(node('invitation-response-status').textContent,/PRIVATE|secret configuration/);
+  assert.match(node('invitation-response-status').textContent,/could not verify/);
+});
