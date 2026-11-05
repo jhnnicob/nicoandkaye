@@ -168,7 +168,7 @@
       text('invitation-contact-note', 'Please contact Nico & Kaye to arrange your role response.');
       document.getElementById('invitation-contact-note').hidden = true;
       responseButtons.forEach(button => {
-        button.setAttribute('aria-describedby', 'invitation-contact-note');
+        button.setAttribute('aria-describedby', 'invitation-attendance-note invitation-contact-note');
         button.setAttribute('title', 'Responses are not available yet. Please contact Nico & Kaye.');
       });
       return;
@@ -191,15 +191,15 @@
           credentials: 'omit',
           redirect: 'follow',
           headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
-          body: JSON.stringify({ invitationId: sheetId, response }),
+          body: JSON.stringify({ type: 'roleResponse', invitationId: sheetId, response }),
           signal: controller.signal,
         });
-        if (!result.ok) throw new Error('Unconfirmed submission');
+        if (!result.ok || result.type === 'opaque') throw new Error('Unconfirmed submission');
         const payload = await result.json();
-        if (payload?.success === true) {
+        if (payload?.success === true && (payload.type === undefined || payload.type === 'roleResponse')) {
           finished = true;
           text('invitation-response-status', response === 'Accepted'
-            ? `${record.recipientName}, thank you! Your acceptance has been recorded.`
+            ? `${record.recipientName}, thank you! Your wedding role and attendance have been confirmed.`
             : `${record.recipientName}, thank you for letting us know. Your decline has been recorded.`);
         } else if (payload?.success === false && payload.message === 'Invitation already answered') {
           finished = true;
@@ -215,7 +215,7 @@
       } catch {
         // The POST may have reached the sheet even if its response was blocked or lost.
         finished = true;
-        text('invitation-response-status', 'We could not confirm whether your response was saved. Please contact the sender to check before trying again.');
+        text('invitation-response-status', 'We could not verify that your response was saved. Please contact Nico & Kaye to confirm your role and attendance before trying again.');
       } finally {
         window.clearTimeout(timeout);
         sending = false;
@@ -238,7 +238,7 @@
     if (!configured) return;
     const decision = response === 'accept' ? 'accept' : 'decline';
     const subject = `Wedding role reply: ${record.role} - ${record.recipientName}`;
-    const body = `Hello ${record.sender},\n\nI would like to ${decision} your invitation.\nRole: ${record.role}\nFrom: ${record.recipientName}\n\nThis is my role response; my wedding attendance RSVP is separate.`;
+    const body = `Hello ${record.sender},\n\nI would like to ${decision} your invitation.\nRole: ${record.role}\nFrom: ${record.recipientName}\n\n${response === 'accept' ? 'I would also like to confirm my wedding attendance. Please confirm both have been recorded.' : 'Please contact me about my wedding attendance.'}`;
     const mailto = `mailto:${encodeURIComponent(address)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     link.disabled = false;
     link.addEventListener('click', () => {

@@ -8,7 +8,7 @@ const template=fs.readFileSync('invite.html','utf8');
 const ids=new Set([...template.matchAll(/\bid="([^"]+)"/g)].map(match=>match[1]));
 function load(){const c={window:{}};vm.runInNewContext(dataSource,c);return c.window.WEDDING_INVITATIONS;}
 const data=load();
-function render(query,{payload={success:true},error=false,mutate=()=>{}}={}){
+function render(query,{payload={success:true},error=false,mutate=()=>{},ok=true,responseType='cors',jsonError=false,fetcher}={}){
   const nodes=new Map(),requests=[],timers=[];
   class Element{
     constructor(){this.hidden=true;this.disabled=false;this.children=[];this.events={};this.attrs={};this.dataset={};this.classList={add(){}};}
@@ -23,7 +23,7 @@ function render(query,{payload={success:true},error=false,mutate=()=>{}}={}){
   const context={URL,URLSearchParams,AbortController,
     window:{location:{search:query},matchMedia:()=>({matches:true}),setTimeout:(callback,delay)=>{timers.push({callback,delay});return timers.length;},clearTimeout(){}},
     document:{body:{dataset:{}},getElementById:id=>ids.has(id)?node(id):null,querySelector:node,createElement:()=>new Element(),createTextNode:text=>({textContent:text})},
-    fetch:async(url,options)=>{requests.push({url,options});if(error)throw Error('Network error');return {ok:true,json:async()=>payload};}};
+    fetch:async(url,options)=>{requests.push({url,options});if(fetcher)return fetcher(url,options);if(error)throw Error('Network error');return {ok,type:responseType,json:async()=>{if(jsonError)throw Error('Invalid JSON');return payload;}};}};
   vm.runInNewContext(dataSource,context);mutate(context.window.WEDDING_INVITATIONS);
   vm.runInNewContext(renderer,context);
   return {node,requests,timers};
@@ -82,7 +82,7 @@ test('new records have disabled response controls until exact sheet IDs are supp
     const {node,requests}=render('?to='+id);assert.equal(data.invitations[id].responseInvitationId,null);
     assert.equal(node('invitation-accept').disabled,true);assert.equal(node('invitation-decline').disabled,true);assert.equal(requests.length,0);
     assert.equal(node('invitation-contact-note').hidden,true);
-    assert.equal(node('invitation-accept').attrs['aria-describedby'],'invitation-contact-note');
+    assert.equal(node('invitation-accept').attrs['aria-describedby'],'invitation-attendance-note invitation-contact-note');
     assert.match(node('invitation-accept').attrs.title,/Responses are not available yet/);
   }
 });
@@ -92,9 +92,9 @@ for(const [button,response] of [['accept','Accepted'],['decline','Declined']]){
     node('invitation-'+button).events.click();node('invitation-'+button).events.click();
     assert.equal(node('invitation-accept').disabled,true);await tick();
     assert.equal(requests.length,1);assert.equal(requests[0].url,data.responseApi.url);
-    assert.deepEqual(JSON.parse(requests[0].options.body),{invitationId:'test-wedding-2026',response});
+    assert.deepEqual(JSON.parse(requests[0].options.body),{type:'roleResponse',invitationId:'test-wedding-2026',response});
     assert.equal(requests[0].options.headers['Content-Type'],'text/plain;charset=UTF-8');
-    assert.match(node('invitation-response-status').textContent,/recorded/);
+    assert.match(node('invitation-response-status').textContent,response==='Accepted'?/wedding role and attendance have been confirmed/:/decline has been recorded/);
   });
 }
 test('not found permits retry; already answered and uncertain errors remain locked',async()=>{
@@ -128,4 +128,40 @@ test('every invitation has one consistent name-based ID; all old links still ope
     assert.equal(node('letter-title').textContent,data.invitations[canonical].completeLetter.split('\n\n')[0]);
   }
   assert.equal(data.aliases.katryn,'katrine');
+});
+
+test('acceptance sends exactly one roleResponse for each configured recipient and confirms only after acknowledgment',async()=>{
+  assert.ok(template.includes('By accepting this invitation, you also confirm your attendance at our wedding.'));
+  assert.ok(template.includes("Yes, I'd Love To!"));
+  assert.ok(!template.includes('Please submit your attendance separately'));
+  for(const [id,record] of Object.entries(data.invitations).filter(([,r])=>r.responseInvitationId)){
+    let acknowledge;
+    const {node,requests}=render('?to='+id,{fetcher:()=>new Promise(resolve=>{acknowledge=resolve;})});
+    node('invitation-accept').events.click();
+    node('invitation-accept').events.click();
+    assert.equal(requests.length,1);
+    assert.equal(node('invitation-accept').disabled,true);
+    assert.doesNotMatch(node('invitation-response-status').textContent,/have been confirmed/);
+    assert.deepEqual(JSON.parse(requests[0].options.body),{type:'roleResponse',invitationId:record.responseInvitationId,response:'Accepted'});
+    assert.equal(requests[0].options.mode,'cors');
+    assert.equal(requests[0].options.redirect,'follow');
+    acknowledge({ok:true,type:'cors',json:async()=>({success:true,type:'roleResponse'})});
+    await tick();
+    assert.match(node('invitation-response-status').textContent,/wedding role and attendance have been confirmed/);
+    assert.ok(node('invitation-response-status').textContent.startsWith(record.recipientName));
+    node('invitation-accept').events.click();
+    assert.equal(requests.length,1);
+    assert.ok(requests.every(request=>JSON.parse(request.options.body).type==='roleResponse'));
+  }
+});
+test('HTTP, opaque, malformed, wrong-type, network, or unverified responses never confirm attendance',async()=>{
+  for(const config of [{ok:false},{responseType:'opaque'},{jsonError:true},{payload:{success:true,type:'weddingRSVP'}},{payload:{success:'true'}},{payload:{}},{error:true}]){
+    const {node,requests}=render('?to=test',config);
+    node('invitation-accept').events.click();await tick();
+    assert.doesNotMatch(node('invitation-response-status').textContent,/have been confirmed/);
+    assert.match(node('invitation-response-status').textContent,/could not verify/);
+    assert.equal(node('invitation-accept').disabled,true);
+    node('invitation-accept').events.click();await tick();
+    assert.equal(requests.length,1);
+  }
 });

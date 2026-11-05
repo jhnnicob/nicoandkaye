@@ -44,7 +44,7 @@ Before clicking a response, create or verify a dedicated test row in **Wedding R
 
 That test ID comes from the sample submission function supplied with the Apps Script. The supplied tracker includes this dedicated test row. The website has not independently read or modified it. Clear its existing timestamp before repeating a clean test; do not change any real-recipient rows. If the ID already belongs to an answered test row, reset only that test row to `Pending` and clear its timestamp before repeating, or configure another dedicated test ID. Never reset a real recipient just to test.
 
-Open the test link, open the letter, and click Accept or Decline. The browser sends `{ invitationId, response }`, with `response` equal to `Accepted` or `Declined`. Success is shown only after a readable JSON response with `success: true`. Confirm column D and E in the sheet. Reset the test row before checking the other response because the supplied API permits only one answer.
+Open the test link, open the letter, and click "Yes, I'd Love To!". The browser sends exactly one `{ type: "roleResponse", invitationId, response: "Accepted" }` request using the configured responseInvitationId. The deployed backend now records both role acceptance and attendance. Success is shown only after a readable JSON response with Boolean `success: true`; if a response type is included, it must be `roleResponse`. Confirm the role response and attendance records in their private sheets. No second weddingRSVP request is sent.
 
 No live API POST was made during implementation or automated checks. Tests use mock responses and cannot verify the actual sheet mapping, deployment permissions, or browser CORS behavior.
 
@@ -58,7 +58,7 @@ Recommended API improvements remain: explicitly open the spreadsheet by ID, guar
 
 To use email instead of the API, clear `responseApi.url`, then set `responseContact.address` to the actual reply address and keep `method` as `email`. No email address has been invented or configured. The email flow only prepares a draft; the recipient must send it. Opening a mail app does not confirm delivery.
 
-Role acceptance remains separate from attendance RSVP. The attendance form now has its own weddingRSVP submission handler; see RSVP.md for its contract and verification procedure.
+Accepting a personalized entourage invitation now confirms both the role and wedding attendance through the backend roleResponse handler. The general attendance form retains its independent weddingRSVP handler and is unchanged by this update; see RSVP.md for that form's contract. Recipients accepting an entourage invitation do not need a second attendance submission.
 
 ## Add a bridesmaid or groomsman later
 
@@ -110,3 +110,28 @@ Run `node --test tests/invitations.test.cjs`. Tests use IDs parsed from the actu
 All active records now use the same value for their object key, `id`, `recipientId`, and `urlIdentifier`. The IDs are `paul`, `ate-len`, `aj`, `cherry-bernabe`, `bhubbles`, `pastor-ano`, `emil-susan`, `ethel-michael`, `test`, `zhalan`, `katrisse`, `katrine`, `krysnah`, `arjay`, `cj`, `ressie`, and `rjay`. For example, use `/invite/?to=paul`.
 
 The `aliases` map preserves all previously shared random URL identifiers and the old `katryn` spelling. Aliases resolve directly to one canonical record; letters are not duplicated. Existing `responseInvitationId` values and the API endpoint remain unchanged. These backend IDs are separate from the name-based page selectors and must continue matching the sheet exactly.
+
+## Combined role and attendance confirmation
+
+The shared invitation button is labeled "Yes, I'd Love To!" and explains: "By accepting this invitation, you also confirm your attendance at our wedding." The note is linked to the button with aria-describedby. Existing letters, styles, recipient names, backend response identifiers, and endpoint configuration are unchanged. Records without a configured responseInvitationId remain disabled; name-based URL IDs are never substituted for spreadsheet IDs.
+
+Request:
+
+```json
+{"type":"roleResponse","invitationId":"<configured responseInvitationId>","response":"Accepted"}
+```
+
+Only one POST is sent. Both sheet updates are the deployed backend's responsibility. The frontend does not call weddingRSVP, infer a guest count, update attendance separately, or claim success on page load. A readable HTTP-success JSON acknowledgment with Boolean success: true is required before displaying the combined role/attendance confirmation. It relies on the supplied backend contract that success means both updates completed; the backend source was not inspected or modified.
+
+Buttons lock during submission and stay locked after confirmation, an already-answered response, or an uncertain network/CORS result. Unknown invitation IDs keep the existing retry behavior. No automatic POST retries are performed. An unconfirmed result asks the recipient to contact the couple rather than submit again, because either sheet may already have been written. The optional unconfigured email fallback only prepares a draft asking the couple to confirm both outcomes; it never shows a saved confirmation.
+
+The existing fetch path uses cors, omit credentials, follows redirects, and submits JSON as text/plain. It never uses no-cors or treats opaque responses as success. Live browser CORS and the backend's two-sheet persistence were not verified by a real submission. Automated requests are mocked. If the acknowledgment cannot be read from the static site's origin, the smallest reliable fallback is a POST-only same-origin serverless route such as /api/role-response hosted through an edge/function service. GitHub Pages alone cannot execute this route. It must validate and forward only the roleResponse payload to the fixed Apps Script endpoint, follow redirects server-to-server, return a verified acknowledgment, and expose no sheet rows. No proxy or hosting change has been implemented.
+
+Before sending real invitations, use the designated test recipient only:
+
+1. Confirm that its configured backend ID matches a dedicated pending test record and the backend can map that test record to attendance. Never reset or reuse a real recipient.
+2. Open /invite/?to=test in a browser with Network tools. Click Yes once and immediately click again. Verify exactly one POST with type roleResponse, response Accepted, and the unchanged test backend ID. No weddingRSVP request should appear.
+3. Verify that the UI does not confirm either outcome while pending. After a readable success: true response, it should confirm both role and attendance using the recipient's name.
+4. Inspect both private sheets: the test role must be accepted and its attendance confirmed exactly once. For shared sponsor records, confirm the backend's intended handling without inventing client-side counts or extra requests.
+5. Test a mocked network failure/non-JSON/opaque response with node --test tests/invitations.test.cjs. These must never show combined success, and uncertain outcomes must remain locked to prevent duplicate writes. If a real browser reports CORS, inspect both sheets before considering any retry.
+6. Confirm that the main Your Reply form and js/rsvp.js remain unchanged. Remove only dedicated test data after validation.
