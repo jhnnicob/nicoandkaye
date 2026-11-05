@@ -62,7 +62,7 @@
 .invitation-page .invitation-footer p { margin: .5rem 0 0; font-family: var(--serif); font-style: italic; font-size: 1rem; }
 @keyframes invitation-reveal { from { opacity: 0; transform: translateY(.5rem); } to { opacity: 1; transform: translateY(0); } }
 @media (min-width: 768px) {
-  .invitation-page .invitation-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .invitation-page .invitation-actions { grid-template-columns: minmax(0, 1fr); }
 }
 @media (prefers-reduced-motion: reduce) {
   .invitation-page *, .invitation-page *::before, .invitation-page *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
