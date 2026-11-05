@@ -22,7 +22,7 @@ Edit the paragraph in the story section in [index.html](index.html).
 Replace the image sources in the gallery block in [index.html](index.html). The current images are in [assets](assets).
 
 ### 5) RSVP text
-Update the RSVP section copy in [index.html](index.html).
+Update the RSVP section copy in [index.html](index.html). The existing form submits through [js/rsvp.js](js/rsvp.js); see [RSVP.md](RSVP.md) for the request contract, CORS limitations, and test procedure.
 
 ### 6) Colors and design palette
 Edit the color variables in [styles.css](styles.css) near the top of the file:

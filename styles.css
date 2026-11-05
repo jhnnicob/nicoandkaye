@@ -17,7 +17,7 @@
 }
 
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; touch-action: manipulation; }
 body {
   margin: 0;
   background: var(--bg);
@@ -618,7 +618,7 @@ button { font: inherit; }
 .closing {
   position: relative;
   min-height: 36rem;
-  background: url('assets/footer2.jpg') center center / cover no-repeat;
+  background: url('assets/Footer4.jpg') center center / cover no-repeat;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1072,7 +1072,7 @@ button { font: inherit; }
 
   .closing {
     min-height: 26rem;
-    background-image: url("assets/footer2.jpg");
+    background-image: url("assets/Footer4.jpg");
   }
 
   .closing-content {
@@ -3928,7 +3928,7 @@ button { font: inherit; }
     justify-content: center;
     padding: clamp(8rem, 25vw, 9rem) 1rem 7rem;
     background-color: #263a2b;
-    background-image: url('assets/hero/Hero6.png');
+    background-image: url('assets/hero/hero6-mobile.jpg');
     background-size: auto 100%;
     background-position: 45% center;
     background-repeat: no-repeat;

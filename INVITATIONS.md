@@ -58,7 +58,7 @@ Recommended API improvements remain: explicitly open the spreadsheet by ID, guar
 
 To use email instead of the API, clear `responseApi.url`, then set `responseContact.address` to the actual reply address and keep `method` as `email`. No email address has been invented or configured. The email flow only prepares a draft; the recipient must send it. Opening a mail app does not confirm delivery.
 
-Role acceptance remains separate from attendance RSVP. The wedding RSVP form is unchanged and currently has no connected submission service.
+Role acceptance remains separate from attendance RSVP. The attendance form now has its own weddingRSVP submission handler; see RSVP.md for its contract and verification procedure.
 
 ## Add a bridesmaid or groomsman later
 
