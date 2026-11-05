@@ -42,6 +42,7 @@ window.WEDDING_INVITATIONS = {
     "aj": {
       "id": "aj",
       "recipientName": "AJ",
+      "hideAttireImage": true,
       "role": "Bridesmaid",
       "completeLetter": "Dear AJ,\n\nThere are people who become part of a love story long before the couple even realizes it, and for us, that person is you.\n\nYou were there during the seasons when I was still praying for the person God had prepared for me, never knowing that it would be Nico. You prayed with me, encouraged me, and walked alongside me in faith. When Nico and I started talking, you were there from day one, cheering us on and lifting us up in prayer.\n\nAs we prepare to begin our next chapter together, it wouldn't feel complete without you standing by my side. Your friendship, support, and prayers have been a beautiful part of our journey, and they continue to mean so much to both of us.\n\nAJ, will you be my Bridesmaid? 💐\n\nLove,\nKaye",
       "signature": "Love,\nKaye",
