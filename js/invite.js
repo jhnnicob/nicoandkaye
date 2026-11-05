@@ -97,10 +97,20 @@
   const attire = record.attireGuide && data.attireGuides &&
     Object.prototype.hasOwnProperty.call(data.attireGuides, record.attireGuide)
     ? data.attireGuides[record.attireGuide] : null;
-  if (typeof attire?.instructions === 'string' && attire.instructions.trim()) {
-    text('invitation-attire-copy', attire.instructions);
-    document.getElementById('invitation-attire').hidden = false;
-    if (typeof attire.image === 'string' && /^assets\/[\w/.-]+\.(?:avif|webp|png|jpe?g|svg)$/.test(attire.image) &&
+  if (attire) {
+    const instructions = typeof attire.instructions === 'string' ? attire.instructions.trim() : '';
+    const attireCopy = document.getElementById('invitation-attire-copy');
+    attireCopy.hidden = !instructions;
+    instructions.split(/(Ninong:|Ninang:)/).forEach(part => {
+      if (part === 'Ninong:' || part === 'Ninang:') {
+        const label = document.createElement('strong');
+        label.textContent = part;
+        attireCopy.appendChild(label);
+      } else {
+        attireCopy.appendChild(document.createTextNode(part));
+      }
+    });
+    if (!record.hideAttireImage && typeof attire.image === 'string' && /^assets\/[\w/.-]+\.(?:avif|webp|png|jpe?g|svg)$/.test(attire.image) &&
         !attire.image.split('/').includes('..') && typeof attire.imageAlt === 'string' && attire.imageAlt.trim()) {
       const image = document.getElementById('invitation-attire-image');
       image.src = attire.image;
@@ -111,6 +121,7 @@
       }
       image.hidden = false;
     }
+    document.getElementById('invitation-attire').hidden = !instructions && document.getElementById('invitation-attire-image').hidden;
   }
   document.getElementById('invitation-experience').hidden = false;
 

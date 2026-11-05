@@ -36,7 +36,7 @@
 .invitation-page .art-bow .art-bow-detail { fill: none; stroke: #b79b61; stroke-width: .7; opacity: .7; }
 .invitation-page .art-gold-line { fill: none; stroke: #b79b61; stroke-width: 1; }
 .invitation-page .art-dress { fill: #175539; stroke: #b79b61; stroke-width: .8; }
-.invitation-page .invitation-greeting { margin: 0 0 1.5rem; color: #354638; font-family: var(--script); font-size: clamp(1.8rem, 6vw, 2.3rem); line-height: 1.4; overflow-wrap: anywhere; }
+.invitation-page .invitation-greeting { margin: 0 0 1.5rem; color: #354638; font-family: var(--serif); font-size: clamp(1.5rem, 5vw, 1.8rem); font-weight: 400; font-style: normal; line-height: 1.4; overflow-wrap: anywhere; }
 .invitation-page .invitation-greeting:focus { outline: none; }
 .invitation-page .invitation-letter-copy p,
 .invitation-page .invitation-letter-copy ul { margin: 0 0 1.25rem; color: #655f52; font-size: .97rem; line-height: 1.95; overflow-wrap: anywhere; }

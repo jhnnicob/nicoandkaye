@@ -68,13 +68,12 @@ test('gown exceptions, individual relationships, and Arjay special letter are pr
   for(const id of ['cj','ressie','rjay'])assert.match(data.invitations[id].completeLetter,/P.S. Groomsmen uniform: black suit\/coat, black pants, and a white inner. Don’t worry about the finishing touch, the bow tie is on us!/);
   assert.equal(data.invitations.zhalan.fullName,null);assert.equal(data.invitations.cj.fullName,null);
 });
-test('sponsor P.S. and role-specific attire guides/images render only where configured',()=>{
-  const ps='P.S. Come dressed to celebrate! Ninong: your best smile, black suit and pants, plus a green or brown necktie. Ninang: whichever formal gown makes you feel most beautiful, in green, brown, beige, or champagne.';
+test('sponsor P.S. is removed and attire guides/images render only where configured',()=>{
   for(const [id,r] of Object.entries(data.invitations)){
     const {node}=render('?to='+id),guide=data.attireGuides[r.attireGuide];
-    if(r.role.startsWith('Principal Sponsor')){assert.equal(r.postscript,ps);assert.equal(node('letter-postscript').textContent,ps);}
-    if(guide){assert.equal(node('invitation-attire').hidden,false);assert.equal(node('invitation-attire-copy').textContent,guide.instructions);}
-    if(guide?.image){assert.equal(node('invitation-attire-image').hidden,false);assert.equal(node('invitation-attire-image').src,guide.image);assert.ok(fs.existsSync(guide.image));assert.ok(guide.imageAlt);}
+    if(r.role.startsWith('Principal Sponsor')){assert.equal(r.postscript,undefined);assert.equal(node('letter-postscript').hidden,true);}
+    if(guide){assert.equal(node('invitation-attire').hidden,!guide.instructions && (!guide.image || !!r.hideAttireImage));assert.equal(node('invitation-attire-copy').textContent,guide.instructions);}
+    if(guide?.image && !r.hideAttireImage){assert.equal(node('invitation-attire-image').hidden,false);assert.equal(node('invitation-attire-image').src,guide.image);assert.ok(fs.existsSync(guide.image));assert.ok(guide.imageAlt);}
     else assert.equal(node('invitation-attire-image').hidden,true);
   }
 });
