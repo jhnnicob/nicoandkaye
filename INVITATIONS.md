@@ -1,6 +1,6 @@
 # Personalized static invitations
 
-Sixteen real invitations are configured in `js/invitation-data.js` using the letters supplied by the couple. The original eight retain their existing URLs, signatures, questions, and response IDs; eight additional letters open for review while awaiting response mappings. Shared sponsor invitations are single records. One separate, clearly labeled test invitation has been added for Apps Script response testing; it is not a real recipient.
+Sixteen real invitations are configured in `js/invitation-data.js` using the letters supplied by the couple. All sixteen use the exact name-based response IDs supplied in the current tracker. Previously shared URL aliases, letters, signatures, and questions are preserved. Shared sponsor invitations are single records. One separate, clearly labeled test invitation has been added for Apps Script response testing; it is not a real recipient.
 
 ## Privacy and publication
 
@@ -24,7 +24,7 @@ Check the recipient name, illustration, role heading, complete letter, original 
 
 ## Google Sheets response API and test invitation
 
-`responseApi.url` in `js/invitation-data.js` contains the Apps Script `/exec` endpoint supplied by the couple. Only records with an explicit `responseInvitationId` can submit to it. All eight real invitations are mapped to the exact column-F IDs supplied in the tracker. Their existing invitation links and letters are unchanged. Pastor Año in the tracker maps to Pastor Año on the invitation; the API matches by ID, not name.
+`responseApi.url` in `js/invitation-data.js` contains the Apps Script `/exec` endpoint supplied by the couple. Only records with an explicit `responseInvitationId` can submit to it. All sixteen real invitations are mapped to the exact name-based column-F IDs supplied in the tracker on November 5, 2026; obsolete UUID mappings have been replaced. Their existing invitation links and letters are unchanged. Pastor Año in the tracker maps to Pastor Año on the invitation; the API matches by ID, not name.
 
 Test link on the requested LAN server:
 
@@ -99,7 +99,7 @@ The eight additional letters reuse the exact wording and signatures supplied in 
 
 Each record provides `recipientId`, `recipientName`, `fullName`, `preferredGreeting`, `role`, `completeLetter`, `signature`, `attireGuide`, and `responseInvitationId`, alongside the existing renderer fields. `attireGuides` centralizes instructions and optional image metadata. The supplied attire PNGs were converted to JPEG at quality 90 without changing dimensions; the two images total about 211 KB. Images have alt text, explicit dimensions, lazy loading, and responsive sizing. Sponsor guides remain text-only because no sponsor sample images were supplied. Do not apply bridesmaid or groomsmen imagery to sponsors.
 
-The new letters are configured under the IDs `zhalan`, `katrisse`, `katrine`, `krysnah`, `arjay`, `cj`, `ressie`, and `rjay`. These short IDs are URL selectors, not authentication. Their `responseInvitationId` values are null until the exact matching column-F IDs are supplied. Their letters open, but accept/decline buttons stay disabled and explain how to arrange a response. Do not invent IDs or reuse another recipient's mapping. Existing real recipients and the designated test record retain their response mappings. The API contract and duplicate-submission safeguards are unchanged.
+The new letters are configured under the IDs `zhalan`, `katrisse`, `katrine`, `krysnah`, `arjay`, `cj`, `ressie`, and `rjay`. These short IDs are URL selectors, not authentication. Their `responseInvitationId` values now match the name-based IDs in the supplied tracker, so all sixteen real acceptance controls are connected. The designated test record retains `test-wedding-2026`. Do not invent IDs or reuse another recipient's mapping. The endpoint and roleResponse request contract are unchanged by this mapping correction.
 
 Review `recipientReviews` before sharing: Zhalan's supplied letter is for the Bride Squad, but the public roster lists Leine Zhalan Torres as Flower Girl. The invitation uses only the supplied name Zhalan and does not assume this is the same person. Confirm the identity and role; the public roster is unchanged. CJ's full name and AJ's full-name mapping also require confirmation. Do not infer these mappings from nicknames.
 
@@ -109,7 +109,7 @@ Run `node --test tests/invitations.test.cjs`. Tests use IDs parsed from the actu
 
 All active records now use the same value for their object key, `id`, `recipientId`, and `urlIdentifier`. The IDs are `paul`, `ate-len`, `aj`, `cherry-bernabe`, `bhubbles`, `pastor-ano`, `emil-susan`, `ethel-michael`, `test`, `zhalan`, `katrisse`, `katrine`, `krysnah`, `arjay`, `cj`, `ressie`, and `rjay`. For example, use `/invite/?to=paul`.
 
-The `aliases` map preserves all previously shared random URL identifiers and the old `katryn` spelling. Aliases resolve directly to one canonical record; letters are not duplicated. Existing `responseInvitationId` values and the API endpoint remain unchanged. These backend IDs are separate from the name-based page selectors and must continue matching the sheet exactly.
+The `aliases` map preserves all previously shared random URL identifiers and the old `katryn` spelling. Aliases resolve directly to one canonical record; letters are not duplicated. The API endpoint is unchanged. The current supplied tracker uses name-based `responseInvitationId` values for all real recipients; the separate test ID remains `test-wedding-2026`. These backend IDs are separate from the name-based page selectors and must continue matching the sheet exactly.
 
 ## Combined role and attendance confirmation
 
@@ -135,3 +135,9 @@ Before sending real invitations, use the designated test recipient only:
 4. Inspect both private sheets: the test role must be accepted and its attendance confirmed exactly once. For shared sponsor records, confirm the backend's intended handling without inventing client-side counts or extra requests.
 5. Test a mocked network failure/non-JSON/opaque response with node --test tests/invitations.test.cjs. These must never show combined success, and uncertain outcomes must remain locked to prevent duplicate writes. If a real browser reports CORS, inspect both sheets before considering any retry.
 6. Confirm that the main Your Reply form and js/rsvp.js remain unchanged. Remove only dedicated test data after validation.
+
+## Tracker mapping correction
+
+The tracker supplied on November 5, 2026 lists the real recipient IDs as the same name-based values used by the current canonical URLs. All 16 responseInvitationId values were matched to column F, checking the role in column B. This fixes the client sending obsolete UUIDs, which the current sheet could not find. No live API POST or spreadsheet change was made.
+
+The supplied test row is already Accepted. Do not use it expecting a new acceptance to succeed unless the owner deliberately resets only that dedicated test row or supplies a separate pending test ID. The copied CJ line also contains test data outside the normal A-G columns; only the first seven tracker columns were used for mapping, so those trailing cells did not become recipient IDs.

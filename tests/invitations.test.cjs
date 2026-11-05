@@ -77,9 +77,9 @@ test('sponsor P.S. is removed and attire guides/images render only where configu
     else assert.equal(node('invitation-attire-image').hidden,true);
   }
 });
-test('new records have disabled response controls until exact sheet IDs are supplied',()=>{
+test('missing sheet mappings still disable response controls',()=>{
   for(const id of ['zhalan','katrisse','katrine','krysnah','arjay','cj','ressie','rjay']){
-    const {node,requests}=render('?to='+id);assert.equal(data.invitations[id].responseInvitationId,null);
+    const {node,requests}=render('?to='+id,{mutate:config=>{config.invitations[id].responseInvitationId=null;}});
     assert.equal(node('invitation-accept').disabled,true);assert.equal(node('invitation-decline').disabled,true);assert.equal(requests.length,0);
     assert.equal(node('invitation-contact-note').hidden,true);
     assert.equal(node('invitation-accept').attrs['aria-describedby'],'invitation-attendance-note invitation-contact-note');
@@ -164,4 +164,16 @@ test('HTTP, opaque, malformed, wrong-type, network, or unverified responses neve
     node('invitation-accept').events.click();await tick();
     assert.equal(requests.length,1);
   }
+});
+
+test('all sixteen real response IDs exactly match the supplied tracker, with a separate test ID',()=>{
+  const trackerIds=['paul','ate-len','aj','zhalan','katrisse','katrine','krysnah','arjay','cj','ressie','rjay','cherry-bernabe','bhubbles','pastor-ano','emil-susan','ethel-michael'];
+  assert.equal(Object.values(data.invitations).filter(record=>!record.isTest).length,trackerIds.length);
+  for(const id of trackerIds){
+    assert.equal(data.invitations[id].responseInvitationId,id);
+    const {node,requests}=render('?to='+id);
+    assert.equal(node('invitation-accept').disabled,false);
+    assert.equal(requests.length,0);
+  }
+  assert.equal(data.invitations.test.responseInvitationId,'test-wedding-2026');
 });
