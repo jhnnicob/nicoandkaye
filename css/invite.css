@@ -6,6 +6,7 @@
 .invitation-page .invitation-intro { margin: clamp(1.8rem, 5vw, 3rem) 0 1.75rem; text-align: center; }
 .invitation-page .invitation-eyebrow { margin: 0 0 .8rem; color: #967e56; font-size: .63rem; letter-spacing: .19em; line-height: 1.7; text-transform: uppercase; }
 .invitation-page h1 { margin: 0; color: #354638; font-family: var(--serif); font-size: clamp(2.6rem, 10vw, 4rem); font-weight: 500; line-height: 1.1; }
+.invitation-page .invitation-title-phrase { white-space: nowrap; }
 .invitation-page .invitation-sprig { position: absolute; z-index: -1; top: 4rem; right: 0; width: 6rem; height: auto; fill: none; stroke: #747b58; stroke-width: 1; opacity: .17; pointer-events: none; }
 .invitation-page .invitation-envelope-area { padding: .5rem 0 0; text-align: center; perspective: 1100px; }
 .invitation-page .invitation-envelope { position: relative; isolation: isolate; width: min(100%, 32rem); min-height: 0; aspect-ratio: 8 / 5; margin: 0 auto 1.75rem; background: #233d31; box-shadow: 0 15px 32px #233d3125; }
