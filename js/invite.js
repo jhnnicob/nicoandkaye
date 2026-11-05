@@ -41,6 +41,11 @@
   else if (record.designVariant === 'bouquet') art = bouquet;
   else art = branch + rings + (record.designVariant === 'rings-flowers' ? flowers : '');
   document.getElementById('letter-illustration').innerHTML = `<svg viewBox="0 0 180 120" focusable="false">${art}</svg>`;
+  if (record.hideIllustration) {
+    document.getElementById('letter-illustration').hidden = true;
+    const letterHeader = document.querySelector('.invitation-letter-header');
+    if (letterHeader) letterHeader.hidden = true;
+  }
 
   // Optional emphasis is rendered as text and strong nodes, never HTML.
   const appendLetterText = (element, value) => {

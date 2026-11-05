@@ -970,7 +970,7 @@ button, input, select, textarea { font: inherit; }
     background:
       linear-gradient(90deg, rgba(255, 247, 235, 0.48), rgba(255, 247, 235, 0.08) 62%, rgba(255, 247, 235, 0.02)),
       linear-gradient(180deg, rgba(255, 235, 204, 0.08), rgba(114, 78, 47, 0.02)),
-      url("assets/details/details_bg_1.jpeg") center 58% / cover no-repeat;
+      url("assets/details/details-landscape.jpg") center 58% / cover no-repeat;
     background-blend-mode: normal;
   }
 
@@ -1557,7 +1557,7 @@ button, input, select, textarea { font: inherit; }
   border-radius: 0;
   background:
     linear-gradient(180deg, rgba(247, 242, 234, 0.62), rgba(247, 242, 234, 0.52)),
-    url("assets/details/details_bg_1.jpeg") center 58% / cover no-repeat;
+    url("assets/details/details-landscape.jpg") center 58% / cover no-repeat;
 }
 
 .details > :not(.details-wave) {
@@ -1633,7 +1633,7 @@ button, input, select, textarea { font: inherit; }
     background:
       linear-gradient(90deg, rgba(247, 242, 234, 0.05), rgba(247, 242, 234, 0.72) 28%, rgba(247, 242, 234, 0.72) 72%, rgba(247, 242, 234, 0.05)),
       linear-gradient(180deg, rgba(247, 242, 234, 0.2), rgba(247, 242, 234, 0.12)),
-      url("assets/details/details_bg_1.jpeg") center / cover no-repeat;
+      url("assets/details/details-landscape.jpg") center / cover no-repeat;
   }
 
   .details::before { display: none; }
