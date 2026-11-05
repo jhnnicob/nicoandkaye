@@ -266,33 +266,18 @@
             <button class="gallery-more-button" type="button" data-gallery-more aria-haspopup="dialog" aria-controls="gallery-more-dialog">View More Photos</button>
           </div>
 
-          <dialog class="gallery-more-dialog" id="gallery-more-dialog" data-gallery-more-dialog aria-labelledby="gallery-more-heading">
-            <header class="gallery-more-dialog__header">
-              <div>
-                <p class="section-kicker">THE FULL COLLECTION</p>
-                <h3 id="gallery-more-heading">More Moments</h3>
-              </div>
-              <button class="gallery-more-dialog__close" type="button" data-gallery-more-close aria-label="Close more photos">&times;</button>
-            </header>
-            <div class="gallery-more-slideshow" data-gallery-more-grid aria-label="More wedding photos slideshow">
-              <button class="gallery-lightbox__nav" type="button" data-more-previous aria-label="Previous photo">&lsaquo;</button>
+          <dialog class="gallery-more-dialog" id="gallery-more-dialog" data-gallery-more-dialog aria-label="Wedding photo album">
+            <div class="gallery-more-slideshow" data-gallery-more-grid aria-label="Wedding photo album">
+              <button class="gallery-album-nav" type="button" data-more-previous aria-label="Previous photo">&lsaquo;</button>
               <div class="gallery-more-slideshow__book" data-more-book aria-label="Photo album page" tabindex="-1">
                 <div class="gallery-more-slideshow__pages" data-more-pages></div>
                 <p class="gallery-more-slideshow__count" data-more-count aria-live="polite"></p>
               </div>
-              <button class="gallery-lightbox__nav" type="button" data-more-next aria-label="Next photo">&rsaquo;</button>
+              <button class="gallery-album-nav" type="button" data-more-next aria-label="Next photo">&rsaquo;</button>
             </div>
           </dialog>
 
-          <dialog class="gallery-lightbox" data-gallery-lightbox aria-label="Photo viewer">
-            <button class="gallery-lightbox__close" type="button" data-gallery-close aria-label="Close photo viewer">&times;</button>
-            <button class="gallery-lightbox__nav gallery-lightbox__nav--previous" type="button" data-gallery-previous aria-label="Previous photo">&lsaquo;</button>
-            <figure class="gallery-lightbox__figure">
-              <img class="gallery-lightbox__image" data-gallery-image alt="" />
-              <figcaption class="gallery-lightbox__count" data-gallery-count></figcaption>
-            </figure>
-            <button class="gallery-lightbox__nav gallery-lightbox__nav--next" type="button" data-gallery-next aria-label="Next photo">&rsaquo;</button>
-          </dialog>
+
         </section>
 
         <section class="guest-policy dress-code dress-code-editorial dc-reference" id="guest-policy" aria-labelledby="dress-code-heading">

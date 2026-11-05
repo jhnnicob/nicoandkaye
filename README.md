@@ -73,3 +73,9 @@ http://localhost:8000
 ## Quick note
 
 Most of the personalization is done without JavaScript. If you want to change names, venue, date, text, or gallery photos, start with [index.html](index.html), then tweak the visual theme in [styles.css](styles.css).
+
+## Gallery viewer
+
+All gallery thumbnails and View More Photos use one shared book-flip album containing the featured photos and the full collection. Clicking a thumbnail opens its exact page; View More starts at the first additional photo. Swipe, drag, tap either half of a page, use the arrows below the book, or press the keyboard arrow keys to turn pages. Escape or tapping outside the dialog exits the album. The viewer uses narrow, equal outer margins on phones.
+
+Gallery previews are served from `assets/gallery/previews/` with a maximum edge of 1600 pixels. Originals remain in `assets/gallery/`. After replacing a gallery photo, regenerate previews with `powershell -File scripts/build-gallery-previews.ps1`. The album keeps only nearby photos loaded, releases images on close, and allows retry after a load failure. Run `node --test tests/gallery.test.cjs` to verify preview dimensions, aspect ratios, and download sizes.

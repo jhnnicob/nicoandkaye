@@ -82,7 +82,7 @@ const thumbnailImages = thumbnailFilenames
   .map((filename) => {
     const match = filename.match(/^thumbnail(\d+)\.(jpe?g|png|webp)$/i);
     return match
-      ? { filename, sequence: Number(match[1]), source: `assets/gallery/${filename}` }
+      ? { filename, sequence: Number(match[1]), source: `assets/gallery/previews/${filename}` }
       : null;
   })
   .filter((image) => image !== null)
@@ -96,41 +96,27 @@ const thumbnailImages = thumbnailFilenames
 const additionalImages = additionalFilenames
   .slice()
   .sort((first, second) => first.localeCompare(second, 'en', { numeric: true, sensitivity: 'base' }))
-  .map((filename) => ({ filename, source: `assets/gallery/${filename}` }));
+  .map((filename) => ({ filename, source: `assets/gallery/previews/${filename}` }));
 const galleryImages = [...thumbnailImages, ...additionalImages];
 const galleryGrid = document.querySelector('[data-gallery-grid]');
 const moreGalleryGrid = document.querySelector('[data-gallery-more-grid]');
 const moreDialog = document.querySelector('[data-gallery-more-dialog]');
-const moreDialogClose = document.querySelector('[data-gallery-more-close]');
 const morePages = document.querySelector('[data-more-pages]');
 const moreCount = document.querySelector('[data-more-count]');
 const moreBook = document.querySelector('[data-more-book]');
 const morePreviousButton = document.querySelector('[data-more-previous]');
 const moreNextButton = document.querySelector('[data-more-next]');
-const lightbox = document.querySelector('[data-gallery-lightbox]');
-const lightboxImage = document.querySelector('[data-gallery-image]');
-const lightboxCount = document.querySelector('[data-gallery-count]');
-const closeButton = document.querySelector('[data-gallery-close]');
-const previousButton = document.querySelector('[data-gallery-previous]');
-const nextButton = document.querySelector('[data-gallery-next]');
 const moreButton = document.querySelector('[data-gallery-more]');
 
 if (
   galleryGrid &&
   moreGalleryGrid &&
   moreDialog instanceof HTMLDialogElement &&
-  moreDialogClose &&
   morePages &&
   moreCount &&
   moreBook &&
   morePreviousButton &&
   moreNextButton &&
-  lightbox instanceof HTMLDialogElement &&
-  lightboxImage instanceof HTMLImageElement &&
-  lightboxCount &&
-  closeButton &&
-  previousButton &&
-  nextButton &&
   moreButton &&
   galleryImages.length
 ) {
@@ -148,39 +134,31 @@ if (
     .map((image, index) => createPhotoMarkup(image, index, index === 0, index === 5))
     .join('');
 
-  let activeIndex = 0;
   let moreIndex = 0;
-  let returnToMoreDialog = false;
   let pageFlipBusy = false;
-  let zoomScale = 1;
-  let panX = 0;
-  let panY = 0;
-  let dragStart = null;
-  let pinchStart = null;
-  let previousTap = null;
-  const pointers = new Map();
   const imageCache = new Map();
   let pageFlip = null;
   let albumPointer = null;
   let suppressPhotoClickUntil = 0;
   let readyPhotoIndex = -1;
   let pendingWrapPage = null;
+  let preloadSequence = 0;
 
   const pageItems = [
-    { image: additionalImages[additionalImages.length - 1], index: additionalImages.length - 1, edge: 'previous' },
-    ...additionalImages.map((image, index) => ({ image, index, edge: '' })),
-    { image: additionalImages[0], index: 0, edge: 'next' },
+    { image: galleryImages[galleryImages.length - 1], index: galleryImages.length - 1, edge: 'previous' },
+    ...galleryImages.map((image, index) => ({ image, index, edge: '' })),
+    { image: galleryImages[0], index: 0, edge: 'next' },
   ];
   morePages.innerHTML = pageItems.map(({ image, index, edge }) => `
     <div class="gallery-more-slideshow__page" data-density="soft" data-more-photo-page="${index}"${edge ? ` data-wrap-page="${edge}" aria-hidden="true"` : ''}>
-      <button class="gallery-more-slideshow__photo-button" type="button" data-more-photo="${index}" aria-label="View photo ${index + 1} full size"${edge ? ' tabindex="-1"' : ''}>
-        <img src="${image.source}" alt="Nico and Kaye, additional photo ${index + 1}" loading="lazy" decoding="async" draggable="false" />
+      <button class="gallery-more-slideshow__photo-button" type="button" data-more-photo="${index}" aria-label="Turn album page from photo ${index + 1}"${edge ? ' tabindex="-1"' : ''}>
+        <img data-src="${image.source}" alt="Nico and Kaye, photo ${index + 1}" decoding="async" draggable="false" />
       </button>
     </div>`).join('');
 
   const preloadPhoto = (index) => {
-    const normalizedIndex = (index + additionalImages.length) % additionalImages.length;
-    const image = additionalImages[normalizedIndex];
+    const normalizedIndex = (index + galleryImages.length) % galleryImages.length;
+    const image = galleryImages[normalizedIndex];
     if (!imageCache.has(image.source)) {
       const preload = new Image();
       const loaded = new Promise((resolve, reject) => {
@@ -188,48 +166,74 @@ if (
         preload.addEventListener('error', () => reject(new Error(`Unable to load gallery photo: ${image.source}`)), { once: true });
       });
       preload.src = image.source;
-      imageCache.set(image.source, loaded.then(() => preload.decode()).then(() => preload));
+      const request = loaded.then(() => preload.decode()).then(() => preload).catch((error) => {
+        // Failed requests must not stay cached, so the next arrow click can retry.
+        if (imageCache.get(image.source) === request) imageCache.delete(image.source);
+        throw error;
+      });
+      imageCache.set(image.source, request);
     }
     return imageCache.get(image.source);
   };
 
+  const releaseDistantPhotos = (index) => {
+    const nearby = new Set([-2, -1, 0, 1, 2].map((offset) =>
+      (index + offset + galleryImages.length) % galleryImages.length));
+    const sources = new Set([...nearby].map((photoIndex) => galleryImages[photoIndex].source));
+    for (const source of imageCache.keys()) {
+      if (!sources.has(source)) imageCache.delete(source);
+    }
+    morePages.querySelectorAll('[data-more-photo-page]').forEach((page) => {
+      if (!nearby.has(Number(page.dataset.morePhotoPage))) {
+        page.querySelector('img').removeAttribute('src');
+      }
+    });
+  };
+
   const preloadNeighbors = async (index) => {
+    const sequence = ++preloadSequence;
     readyPhotoIndex = -1;
+    releaseDistantPhotos(index);
     const neighbors = [index - 1, index, index + 1];
     try {
       await Promise.all(neighbors.map(async (photoIndex) => {
-        const normalizedIndex = (photoIndex + additionalImages.length) % additionalImages.length;
+        const normalizedIndex = (photoIndex + galleryImages.length) % galleryImages.length;
         await preloadPhoto(normalizedIndex);
+        if (!moreDialog.open || sequence !== preloadSequence) return;
         // Decode the actual page images as well as the network preloads.
         await Promise.all(Array.from(morePages.querySelectorAll(
           `[data-more-photo-page="${normalizedIndex}"] img`
         ), async (image) => {
-          image.loading = 'eager';
+          image.src = image.dataset.src;
           await image.decode();
         }));
       }));
-      if (moreIndex === index) readyPhotoIndex = index;
-      // Warm the next pair without delaying this turn or fetching the whole album.
-      [index - 2, index + 2].forEach((next) => void preloadPhoto(next).catch(() => {}));
+      if (moreDialog.open && moreIndex === index && sequence === preloadSequence) {
+        readyPhotoIndex = index;
+        moreCount.textContent = `${moreIndex + 1} / ${galleryImages.length}`;
+      }
     } catch (error) {
       console.error(error);
+      if (moreDialog.open && sequence === preloadSequence) {
+        moreCount.textContent = 'Photo could not load. Tap an arrow to retry.';
+      }
     }
   };
 
   const showMorePhoto = (index) => {
-    moreIndex = (index + additionalImages.length) % additionalImages.length;
-    moreCount.textContent = `${moreIndex + 1} / ${additionalImages.length}`;
-    moreBook.setAttribute('aria-label', `Photo album, photo ${moreIndex + 1} of ${additionalImages.length}`);
+    moreIndex = (index + galleryImages.length) % galleryImages.length;
+    moreCount.textContent = `${moreIndex + 1} / ${galleryImages.length}`;
+    moreBook.setAttribute('aria-label', `Photo album, photo ${moreIndex + 1} of ${galleryImages.length}`);
     preloadNeighbors(moreIndex);
   };
 
   const updateMorePhotoIndex = (pageIndex) => {
     if (pageIndex === 0) {
-      showMorePhoto(additionalImages.length - 1);
-      pendingWrapPage = additionalImages.length;
+      showMorePhoto(galleryImages.length - 1);
+      pendingWrapPage = galleryImages.length;
       return;
     }
-    if (pageIndex === additionalImages.length + 1) {
+    if (pageIndex === galleryImages.length + 1) {
       showMorePhoto(0);
       pendingWrapPage = 1;
       return;
@@ -250,19 +254,20 @@ if (
     if (!moreDialog.open || pageFlip) return;
     // Mount the engine on the page container, keeping the count outside its layers.
     const pages = Array.from(morePages.children);
+    const initialPage = moreIndex + 1;
     pageFlip = new window.St.PageFlip(morePages, {
       width: 360,
       height: 480,
       size: 'stretch',
-      minWidth: 200,
-      maxWidth: 390,
+      minWidth: 360,
+      maxWidth: 720,
       minHeight: 133,
-      maxHeight: 520,
+      maxHeight: 960,
       flippingTime: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 1 : 780,
       drawShadow: true,
       maxShadowOpacity: 0.32,
       usePortrait: true,
-      startPage: 1,
+      startPage: initialPage,
       autoSize: false,
       showCover: false,
       mobileScrollSupport: false,
@@ -288,11 +293,18 @@ if (
       }
     });
     pageFlip.loadFromHTML(pages);
+    // Keep one full-width page instead of two narrow pages, including on phones
+    // smaller than the engine's portrait breakpoint.
+    morePages.style.minWidth = '0';
+    pageFlip.update();
+    // The engine can align its initial spread to an even page. Explicitly select
+    // the requested photo after mounting so thumbnail links stay exact.
+    pageFlip.turnToPage(initialPage);
   };
 
   const turnMorePhoto = async (direction) => {
-    if (!pageFlip || pageFlipBusy || additionalImages.length < 2) return;
-    const targetIndex = (moreIndex + direction + additionalImages.length) % additionalImages.length;
+    if (!pageFlip || pageFlipBusy || galleryImages.length < 2) return;
+    const targetIndex = (moreIndex + direction + galleryImages.length) % galleryImages.length;
     pageFlipBusy = true;
     moreBook.setAttribute('aria-busy', 'true');
     try {
@@ -311,90 +323,31 @@ if (
     }
   };
 
-  const showPhoto = (index) => {
-    activeIndex = (index + galleryImages.length) % galleryImages.length;
-    const image = galleryImages[activeIndex];
-    lightboxImage.src = image.source;
-    lightboxImage.alt = `Nico and Kaye, photo ${activeIndex + 1}`;
-    lightboxCount.textContent = `${activeIndex + 1} / ${galleryImages.length}`;
-    resetZoom();
-  };
-
-  const clampPan = () => {
-    const stage = lightboxImage.parentElement;
-    if (!stage) return;
-    const maxX = Math.max(0, (lightboxImage.offsetWidth * zoomScale - stage.clientWidth) / 2);
-    const maxY = Math.max(0, (lightboxImage.offsetHeight * zoomScale - stage.clientHeight) / 2);
-    panX = Math.min(maxX, Math.max(-maxX, panX));
-    panY = Math.min(maxY, Math.max(-maxY, panY));
-  };
-
-  const renderZoom = () => {
-    clampPan();
-    lightboxImage.style.setProperty('--zoom-scale', String(zoomScale));
-    lightboxImage.style.setProperty('--zoom-x', `${panX}px`);
-    lightboxImage.style.setProperty('--zoom-y', `${panY}px`);
-    lightboxImage.classList.toggle('is-zoomed', zoomScale > 1);
-    lightboxImage.setAttribute('aria-label', zoomScale > 1
-      ? 'Photo zoomed. Drag to pan, double-tap or scroll to zoom out.'
-      : 'Photo at full view. Double-tap or scroll to zoom in.');
-  };
-
-  function resetZoom() {
-    zoomScale = 1;
-    panX = 0;
-    panY = 0;
-    pointers.clear();
-    dragStart = null;
-    pinchStart = null;
-    previousTap = null;
-    lightboxImage.style.removeProperty('--zoom-scale');
-    lightboxImage.style.removeProperty('--zoom-x');
-    lightboxImage.style.removeProperty('--zoom-y');
-    lightboxImage.classList.remove('is-zoomed');
-  }
-
-  const setZoom = (scale, pointX, pointY) => {
-    const previousScale = zoomScale;
-    zoomScale = Math.min(4, Math.max(1, scale));
-    if (zoomScale === 1) {
-      panX = 0;
-      panY = 0;
-    } else if (pointX !== undefined && pointY !== undefined) {
-      const rect = lightboxImage.getBoundingClientRect();
-      const relativeX = pointX - (rect.left + rect.width / 2);
-      const relativeY = pointY - (rect.top + rect.height / 2);
-      const factor = 1 - zoomScale / previousScale;
-      panX += relativeX * factor;
-      panY += relativeY * factor;
-    }
-    renderZoom();
-  };
-
-  const openLightbox = (index) => {
-    showPhoto(index);
-    if (!lightbox.open) lightbox.showModal();
-    document.body.classList.add('gallery-lightbox-open');
-    closeButton.focus();
-  };
-
-  const closeLightbox = () => {
-    if (lightbox.open) lightbox.close();
-    document.body.classList.remove('gallery-lightbox-open');
+  const openAlbum = (index) => {
+    showMorePhoto(index);
+    if (!moreDialog.open) moreDialog.showModal();
+    document.body.classList.add('gallery-album-open');
+    if (pageFlip) pageFlip.turnToPage(moreIndex + 1);
+    else window.requestAnimationFrame(() => {
+      void initializePageFlip().catch(() => {
+        moreCount.textContent = 'The album could not load. Please close it and try again.';
+      });
+    });
   };
 
   galleryGrid.addEventListener('click', (event) => {
     const photo = event.target.closest('[data-gallery-index]');
-    if (photo) openLightbox(Number(photo.dataset.galleryIndex));
+    if (photo) openAlbum(Number(photo.dataset.galleryIndex));
   });
-
-  moreButton.addEventListener('click', () => {
-    showMorePhoto(0);
-    moreDialog.showModal();
-    if (pageFlip) pageFlip.turnToPage(1);
-    else window.requestAnimationFrame(initializePageFlip);
+  moreButton.addEventListener('click', () => openAlbum(thumbnailImages.length));
+  moreDialog.addEventListener('close', () => {
+    document.body.classList.remove('gallery-album-open');
+    albumPointer = null;
+    ++preloadSequence;
+    readyPhotoIndex = -1;
+    imageCache.clear();
+    morePages.querySelectorAll('img').forEach((image) => image.removeAttribute('src'));
   });
-  moreDialogClose.addEventListener('click', () => moreDialog.close());
   moreDialog.addEventListener('click', (event) => {
     if (event.target === moreDialog) moreDialog.close();
   });
@@ -423,10 +376,22 @@ if (
   });
   const finishAlbumPointer = (event) => {
     if (!albumPointer || albumPointer.id !== event.pointerId) return;
-    const moved = albumPointer.moved;
+    const pointer = albumPointer;
+    const moved = pointer.moved;
     albumPointer = null;
-    // A tap remains a photo-preview click. A drag must never open the lightbox.
-    pageFlip.userStop(albumPoint(event), !moved);
+    // Taps and drags both stay in the same book viewer.
+    const deltaX = event.clientX - pointer.x;
+    const deltaY = event.clientY - pointer.y;
+    const swipeThreshold = Math.min(80, moreBook.clientWidth * 0.18);
+    if (event.type === 'pointerup' && moved && Math.abs(deltaX) >= swipeThreshold && Math.abs(deltaX) > Math.abs(deltaY)) {
+      // A normal phone swipe should finish the turn without requiring the
+      // finger to travel beyond the book's outside edge.
+      pageFlip.userStop(albumPoint(event), true);
+      if (deltaX < 0) pageFlip.flipNext('top');
+      else pageFlip.flipPrev('top');
+    } else {
+      pageFlip.userStop(albumPoint(event), !moved);
+    }
     if (moved) suppressPhotoClickUntil = performance.now() + 500;
     if (moreBook.hasPointerCapture(event.pointerId)) moreBook.releasePointerCapture(event.pointerId);
   };
@@ -439,9 +404,9 @@ if (
     if (!photoButton || pageFlipBusy || performance.now() < suppressPhotoClickUntil) return;
     const photoIndex = Number(photoButton.dataset.morePhoto);
     if (photoIndex !== moreIndex) return;
-    returnToMoreDialog = true;
-    moreDialog.close();
-    openLightbox(thumbnailImages.length + photoIndex);
+    const bounds = moreBook.getBoundingClientRect();
+    const direction = event.detail && event.clientX < bounds.left + bounds.width / 2 ? -1 : 1;
+    void turnMorePhoto(direction);
   });
   moreDialog.addEventListener('keydown', (event) => {
     if (event.key === 'ArrowLeft') {
@@ -452,99 +417,5 @@ if (
       event.preventDefault();
       void turnMorePhoto(1);
     }
-  });
-  closeButton.addEventListener('click', closeLightbox);
-  previousButton.addEventListener('click', () => showPhoto(activeIndex - 1));
-  nextButton.addEventListener('click', () => showPhoto(activeIndex + 1));
-
-  lightboxImage.addEventListener('pointerdown', (event) => {
-    event.preventDefault();
-    if (event.isTrusted) lightboxImage.setPointerCapture(event.pointerId);
-    pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-
-    if (pointers.size === 2) {
-      const [first, second] = [...pointers.values()];
-      pinchStart = {
-        distance: Math.hypot(second.x - first.x, second.y - first.y),
-        scale: zoomScale,
-        x: (first.x + second.x) / 2,
-        y: (first.y + second.y) / 2,
-        panX,
-        panY,
-      };
-      dragStart = null;
-      return;
-    }
-
-    const now = Date.now();
-    if (
-      previousTap &&
-      now - previousTap.time < 320 &&
-      Math.hypot(event.clientX - previousTap.x, event.clientY - previousTap.y) < 28
-    ) {
-      previousTap = null;
-      setZoom(zoomScale > 1 ? 1 : 2.5, event.clientX, event.clientY);
-      return;
-    }
-
-    previousTap = { time: now, x: event.clientX, y: event.clientY };
-    if (zoomScale > 1) {
-      dragStart = { x: event.clientX, y: event.clientY, panX, panY };
-    }
-  });
-
-  lightboxImage.addEventListener('pointermove', (event) => {
-    if (!pointers.has(event.pointerId)) return;
-    pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-
-    if (pinchStart && pointers.size === 2) {
-      const [first, second] = [...pointers.values()];
-      const distance = Math.hypot(second.x - first.x, second.y - first.y);
-      const midpointX = (first.x + second.x) / 2;
-      const midpointY = (first.y + second.y) / 2;
-      zoomScale = Math.min(4, Math.max(1, pinchStart.scale * distance / pinchStart.distance));
-      panX = pinchStart.panX + midpointX - pinchStart.x;
-      panY = pinchStart.panY + midpointY - pinchStart.y;
-      renderZoom();
-    } else if (dragStart && zoomScale > 1) {
-      panX = dragStart.panX + event.clientX - dragStart.x;
-      panY = dragStart.panY + event.clientY - dragStart.y;
-      renderZoom();
-    }
-  });
-
-  const finishPointer = (event) => {
-    pointers.delete(event.pointerId);
-    if (pointers.size < 2) pinchStart = null;
-    if (pointers.size === 0) dragStart = null;
-  };
-
-  lightboxImage.addEventListener('pointerup', finishPointer);
-  lightboxImage.addEventListener('pointercancel', finishPointer);
-  lightboxImage.addEventListener('wheel', (event) => {
-    event.preventDefault();
-    setZoom(zoomScale + (event.deltaY < 0 ? 0.25 : -0.25), event.clientX, event.clientY);
-  }, { passive: false });
-
-  lightbox.addEventListener('click', (event) => {
-    if (event.target === lightbox) closeLightbox();
-  });
-  lightbox.addEventListener('close', () => {
-    document.body.classList.remove('gallery-lightbox-open');
-    resetZoom();
-    if (returnToMoreDialog) {
-      returnToMoreDialog = false;
-      moreDialog.showModal();
-      moreBook.focus();
-    }
-  });
-  lightbox.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      closeLightbox();
-      return;
-    }
-    if (event.key === 'ArrowLeft') showPhoto(activeIndex - 1);
-    if (event.key === 'ArrowRight') showPhoto(activeIndex + 1);
   });
 }
