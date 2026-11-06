@@ -31,7 +31,7 @@ test('autoplay allowed: one looping audio at 25 percent; duplicate script initia
  const app=setup();await tick();assert.equal(app.audio.playCalls,1);assert.equal(app.audio.loop,true);assert.equal(app.audio.preload,'metadata');assert.equal(app.audio.volume,.25);assert.equal(app.parts.get('button').attrs['aria-label'],'Pause background music');app.reinitialize();assert.equal(app.body.children.length,1);assert.equal(app.audio.playCalls,1);
 });
 test('blocked autoplay offers a control and a real invitation-opening click retries without changing that interaction',async()=>{
- const app=setup({blocked:true});await tick();assert.equal(app.parts.get('.music-player__hint').hidden,false);assert.equal(app.parts.get('.music-player__hint').textContent,'Tap to Play Music');
+ const app=setup({blocked:true});await tick();assert.equal(app.parts.get('.music-player__hint').hidden,false);assert.equal(app.parts.get('.music-player__hint').textContent,'Tap to play');
  app.allow();app.opener.emit('click');await tick();assert.equal(app.audio.playCalls,2);assert.equal(app.audio.paused,false);assert.equal(app.parts.get('.music-player__hint').hidden,true);
 });
 test('manual play/pause is accessible and pause stays respected through opening, section navigation, and return',async()=>{

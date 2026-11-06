@@ -31,7 +31,7 @@
     <button class="music-player__button" type="button" aria-label="Play background music" aria-pressed="false">
       <svg data-music-note viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 18V5l11-2v13M9 9l11-2"/><ellipse cx="6" cy="18" rx="3" ry="2"/><ellipse cx="17" cy="16" rx="3" ry="2"/></svg>
       <svg data-music-pause viewBox="0 0 24 24" aria-hidden="true" focusable="false" hidden><path d="M8 5v14M16 5v14"/></svg>
-      <span class="music-player__hint" hidden>Tap to Play Music</span>
+      <span class="music-player__hint" hidden>Tap to play</span>
     </button>
     <span class="music-player__status" role="status" aria-live="polite"></span>`;
   document.body.appendChild(player);
@@ -78,8 +78,8 @@
     button.setAttribute('aria-pressed', String(playing));
     button.setAttribute('aria-label', playing ? 'Pause background music' : failed ? 'Retry background music' : 'Play background music');
     button.setAttribute('aria-busy', String(Boolean(pending)));
-    hint.hidden = playing || manuallyPaused || (!blocked && !failed);
-    hint.textContent = failed ? 'Music unavailable — tap to retry' : 'Tap to Play Music';
+    hint.hidden = playing;
+    hint.textContent = failed ? 'Music unavailable — tap to retry' : 'Tap to play';
     status.textContent = failed ? 'Music could not load. You can tap the music button to retry.'
       : playing ? 'Background music playing.' : manuallyPaused ? 'Background music paused.'
       : blocked ? 'Tap to play background music.' : '';
