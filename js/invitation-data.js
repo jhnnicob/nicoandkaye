@@ -309,7 +309,7 @@ window.WEDDING_INVITATIONS = {
       "id": "ressie",
       "recipientId": "ressie",
       "recipientName": "Ressie",
-      "fullName": "John Ressie Santos",
+      "fullName": "John Ressie Sanchez",
       "preferredGreeting": "Dear Ressie,",
       "role": "Groomsman",
       "completeLetter": "Dear Ressie,\n\nI found the one I’m spending forever with, and now I need the right guys standing beside me.\n\nAs I step into this new chapter with Kaye, it means a lot to have you there for one of the biggest days of my life.\n\nYour mission is pretty simple: show up, suit up, keep me calm, and help us make some great memories.\n\nLet’s do this!\n\nP.S. Groomsmen uniform: black suit/coat, black pants, and a white inner. Don’t worry about the finishing touch, the bow tie is on us!\n\nRegards,\nNico",
