@@ -1,10 +1,8 @@
 const thumbnailFilenames = [
-  'thumbnail1.jpg',
-  'thumbnail2.jpg',
   'thumbnail3.jpg',
-  'thumbnail4.jpg',
+  'thumbnail1.jpg',
+  'gallery011.jpg',
   'thumbnail5.jpg',
-  'thumbnail6.jpg',
 ];
 
 const additionalFilenames = [
@@ -33,7 +31,6 @@ const additionalFilenames = [
   'MM-215.jpg',
   'MM-217.jpg',
   'MM-22.jpg',
-  'MM-225.jpg',
   'MM-228.jpg',
   'MM-23.jpg',
   'MM-231.jpg',
@@ -79,19 +76,7 @@ const additionalFilenames = [
 ];
 
 const thumbnailImages = thumbnailFilenames
-  .map((filename) => {
-    const match = filename.match(/^thumbnail(\d+)\.(jpe?g|png|webp)$/i);
-    return match
-      ? { filename, sequence: Number(match[1]), source: `assets/gallery/previews/${filename}` }
-      : null;
-  })
-  .filter((image) => image !== null)
-  .sort((first, second) => {
-    const displayOrder = { 1: 2, 2: 3, 3: 1, 4: 4, 5: 6, 6: 5 };
-    const firstOrder = displayOrder[first.sequence] || first.sequence;
-    const secondOrder = displayOrder[second.sequence] || second.sequence;
-    return firstOrder - secondOrder;
-  });
+  .map((filename) => ({ filename, source: `assets/gallery/previews/${filename}` }));
 
 const additionalImages = additionalFilenames
   .slice()
@@ -131,7 +116,7 @@ if (
         </button>`;
 
   galleryGrid.innerHTML = thumbnailImages
-    .map((image, index) => createPhotoMarkup(image, index, index === 0, index === 5))
+    .map((image, index) => createPhotoMarkup(image, index, index === 0, index === thumbnailImages.length - 1))
     .join('');
 
   let moreIndex = 0;
