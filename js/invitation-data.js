@@ -68,6 +68,7 @@ window.WEDDING_INVITATIONS = {
       "urlIdentifier": "cherry-bernabe",
       "responseQuestion": "Will you be our Principal Sponsor?",
       "responseInvitationId": "cherry-bernabe",
+      "confirmationRecipients": [{"name": "Ninang Cherry", "invitationId": "cherry"}, {"name": "Ninong Bernabe", "invitationId": "bernabe"}],
       "recipientId": "cherry-bernabe",
       "preferredGreeting": "Dear Ninang Cherry and Ninong Bernabe,",
       "fullName": "Cherry Gallardo and Bernabe Gallardo",
@@ -116,6 +117,7 @@ window.WEDDING_INVITATIONS = {
       "urlIdentifier": "emil-susan",
       "responseQuestion": "Will you be our Principal Sponsor?",
       "responseInvitationId": "emil-susan",
+      "confirmationRecipients": [{"name": "Kuya Emil", "invitationId": "emil"}, {"name": "Ate Susan", "invitationId": "susan"}],
       "recipientId": "emil-susan",
       "preferredGreeting": "Dear Kuya Emil and Ate Susan,",
       "fullName": "Emil Caponpon and Susan Caponpon",
@@ -136,6 +138,7 @@ window.WEDDING_INVITATIONS = {
         "Nico & Kaye"
       ],
       "responseInvitationId": "ethel-michael",
+      "confirmationRecipients": [{"name": "Ninang Ethel", "invitationId": "ethel"}, {"name": "Ninong Michael", "invitationId": "michael"}],
       "recipientId": "ethel-michael",
       "preferredGreeting": "Dear Ninang Ethel and Ninong Michael,",
       "fullName": "Ethel Umali and Michael Umali",

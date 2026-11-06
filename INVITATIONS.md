@@ -1,6 +1,6 @@
 # Personalized static invitations
 
-Sixteen real invitations are configured in `js/invitation-data.js` using the letters supplied by the couple. All sixteen use the exact name-based response IDs supplied in the current tracker. Previously shared URL aliases, letters, signatures, and questions are preserved. Shared sponsor invitations are single records. One separate, clearly labeled test invitation has been added for Apps Script response testing; it is not a real recipient.
+Sixteen real invitations are configured in `js/invitation-data.js` using the letters supplied by the couple. All sixteen use the exact name-based response IDs supplied in the current tracker. Previously shared URL aliases, letters, signatures, and questions are preserved. Shared sponsor invitations retain one letter and URL, with independent confirmation mappings for each spouse. See [COUPLE-CONFIRMATIONS.md](COUPLE-CONFIRMATIONS.md) for the required sheet preparation before deployment. One separate, clearly labeled test invitation has been added for Apps Script response testing; it is not a real recipient.
 
 ## Privacy and publication
 

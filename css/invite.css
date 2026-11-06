@@ -99,3 +99,34 @@
 .invitation-page .invitation-response .invitation-button { display: flex; align-items: center; justify-content: center; min-height: 3.25rem; width: 100%; }
 .invitation-page .invitation-response .invitation-button:disabled { opacity: 1; cursor: not-allowed; }
 .invitation-page .invitation-letter-copy .invitation-letter-reminder { font-style: italic; }
+
+/* Shared letters retain two independent, equally sized confirmation controls. */
+.invitation-page .invitation-actions.invitation-actions-couple {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(.5rem, 2vw, .75rem);
+}
+.invitation-page .invitation-confirmation-person {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  text-align: center;
+}
+.invitation-page .invitation-confirmation-name {
+  color: #354638;
+  margin-bottom: .6rem;
+  min-height: 3em;
+  line-height: 1.5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-wrap: anywhere;
+}
+.invitation-page .invitation-actions-couple .invitation-button {
+  height: 100%;
+  padding-inline: clamp(.35rem, 2vw, 1rem);
+  font-size: clamp(.8rem, 2.8vw, 1rem);
+  white-space: normal;
+}
+.invitation-page .invitation-actions-couple .invitation-response-status {
+  overflow-wrap: anywhere;
+}

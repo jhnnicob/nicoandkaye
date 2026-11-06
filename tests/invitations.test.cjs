@@ -134,7 +134,7 @@ test('acceptance sends exactly one roleResponse for each configured recipient an
   assert.ok(template.includes('By accepting this invitation, you also confirm your attendance at our wedding.'));
   assert.ok(template.includes("Yes, I'd Love To!"));
   assert.ok(!template.includes('Please submit your attendance separately'));
-  for(const [id,record] of Object.entries(data.invitations).filter(([,r])=>r.responseInvitationId)){
+  for(const [id,record] of Object.entries(data.invitations).filter(([,r])=>r.responseInvitationId && !r.confirmationRecipients)){
     let acknowledge;
     const {node,requests}=render('?to='+id,{fetcher:()=>new Promise(resolve=>{acknowledge=resolve;})});
     node('invitation-accept').events.click();
@@ -172,7 +172,7 @@ test('all sixteen real response IDs exactly match the supplied tracker, with a s
   for(const id of trackerIds){
     assert.equal(data.invitations[id].responseInvitationId,id);
     const {node,requests}=render('?to='+id);
-    assert.equal(node('invitation-accept').disabled,false);
+    assert.equal(node('invitation-accept').disabled,!!data.invitations[id].confirmationRecipients);
     assert.equal(requests.length,0);
   }
   assert.equal(data.invitations.test.responseInvitationId,'test-wedding-2026');
@@ -182,6 +182,7 @@ test('canonical and legacy links submit the displayed recipient ID, never a name
   const expectedIds={paul:'paul','ate-len':'ate-len',aj:'aj',zhalan:'zhalan',katrisse:'katrisse',katrine:'katrine',krysnah:'krysnah',arjay:'arjay',cj:'cj',ressie:'ressie',rjay:'rjay','cherry-bernabe':'cherry-bernabe',bhubbles:'bhubbles','pastor-ano':'pastor-ano','emil-susan':'emil-susan','ethel-michael':'ethel-michael',test:'test-wedding-2026'};
   const queries=[...Object.keys(expectedIds).map(id=>[id,id]),...Object.entries(data.aliases)];
   for(const [query,canonical] of queries){
+    if(data.invitations[canonical].confirmationRecipients) continue;
     const expected=expectedIds[canonical];assert.ok(expected,canonical);
     const {node,requests}=render('?to='+encodeURIComponent(query),{payload:{success:true,type:'roleResponse',invitationId:expected}});
     assert.equal(node('invitation-for').textContent,data.invitations[canonical].recipientName);
@@ -218,4 +219,55 @@ test('known backend failures are explained without exposing arbitrary server err
   node('invitation-accept').events.click();await tick();
   assert.doesNotMatch(node('invitation-response-status').textContent,/PRIVATE|secret configuration/);
   assert.match(node('invitation-response-status').textContent,/could not verify/);
+});
+
+const coupleMappings = {
+  'ethel-michael': [['Ninang Ethel','ethel'],['Ninong Michael','michael']],
+  'emil-susan': [['Kuya Emil','emil'],['Ate Susan','susan']],
+  'cherry-bernabe': [['Ninang Cherry','cherry'],['Ninong Bernabe','bernabe']],
+};
+test('couples and legacy aliases confirm each spouse independently, including concurrent clicks', async()=>{
+  for (const [id,people] of Object.entries(coupleMappings)) {
+    for (const query of [id,...Object.keys(data.aliases).filter(alias=>data.aliases[alias]===id)]) {
+      const pending=[];
+      const {node,requests}=render('?to='+query,{fetcher:()=>new Promise(resolve=>pending.push(resolve))});
+      const columns=node('.invitation-actions').children;
+      assert.equal(columns.length,2);
+      assert.equal(node('invitation-accept').events.click,undefined);
+      people.forEach(([name,personId],i)=>{
+        assert.equal(columns[i].children[0].textContent,name);
+        assert.equal(data.invitations[id].confirmationRecipients[i].invitationId,personId);
+      });
+      const [first,second]=columns.map(column=>column.children[1]);
+      first.events.click();first.events.click();
+      assert.equal(requests.length,1);assert.equal(second.disabled,false);
+      second.events.click();second.events.click();
+      assert.equal(requests.length,2);
+      for(let i=0;i<2;i++) {
+        assert.deepEqual(JSON.parse(requests[i].options.body),{type:'roleResponse',invitationId:people[i][1],response:'Accepted'});
+        assert.doesNotMatch(columns[i].children[2].textContent,/have been confirmed/);
+      }
+      pending[1]({ok:true,type:'cors',json:async()=>({success:true,type:'roleResponse',invitationId:people[1][1]})});await tick();
+      assert.match(columns[1].children[2].textContent,/have been confirmed/);
+      assert.doesNotMatch(columns[0].children[2].textContent,/have been confirmed/);
+      pending[0]({ok:true,type:'cors',json:async()=>({success:true,type:'roleResponse',invitationId:people[0][1]})});await tick();
+      assert.match(columns[0].children[2].textContent,/have been confirmed/);
+      first.events.click();second.events.click();assert.equal(requests.length,2);
+    }
+  }
+});
+test('couple errors, absent or mismatched acknowledgments never confirm a spouse or disable the other',async()=>{
+  for(const payload of [{success:true},{success:true,invitationId:'michael'},{success:false,message:'Invitation not found'}]) {
+    const {node,requests}=render('?to=ethel-michael',{payload});
+    const [first,second]=node('.invitation-actions').children;
+    first.children[1].events.click();await tick();
+    assert.doesNotMatch(first.children[2].textContent,/have been confirmed/);
+    assert.equal(second.children[1].disabled,false);assert.equal(second.children[2].textContent,'');
+    assert.equal(requests.length,1);
+  }
+});
+test('invalid couple configuration never falls back to submitting a joint ID',()=>{
+  const {node,requests}=render('?to=ethel-michael',{mutate:d=>{d.invitations['ethel-michael'].confirmationRecipients[1].invitationId='ethel';}});
+  assert.equal(node('invitation-accept').disabled,true);assert.equal(node('invitation-accept').events.click,undefined);
+  assert.equal(requests.length,0);
 });
