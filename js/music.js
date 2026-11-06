@@ -14,7 +14,11 @@
   let blocked = false;
   let failed = false;
   let disposed = false;
-  let resumeOnReturn = false;
+  let automaticallyPaused = false;
+  let pageSuspended = false;
+  let windowFocused = document.hasFocus();
+  const isActive = () => !pageSuspended && document.visibilityState === 'visible' &&
+    windowFocused && document.hasFocus();
   let layoutFrame = 0;
   const cleanups = [];
   audio.loop = true;
@@ -83,7 +87,7 @@
   };
 
   const tryPlay = () => {
-    if (disposed || manuallyPaused || pending || !audio.paused) return pending;
+    if (disposed || manuallyPaused || pending || !isActive() || !audio.paused) return pending;
     blocked = false;
     failed = false;
     let attempt;
@@ -94,29 +98,55 @@
       attempt = Promise.reject(error);
     }
     const request = Promise.resolve(attempt).then(() => {
-      if (disposed || manuallyPaused) audio.pause();
+      if (disposed || manuallyPaused || !isActive()) {
+        if (!disposed && !manuallyPaused) automaticallyPaused = true;
+        audio.pause();
+      }
     }).catch((error) => {
       if (disposed || manuallyPaused || error?.name === 'AbortError') return;
       blocked = error?.name === 'NotAllowedError';
       failed = !blocked;
+      automaticallyPaused = false;
     }).finally(() => {
       if (pending === request) pending = null;
       render();
+      synchronizePlayback();
     });
     pending = request;
     render();
     return request;
   };
 
+  function synchronizePlayback() {
+    if (disposed) return;
+    if (manuallyPaused) {
+      automaticallyPaused = false;
+      if (!audio.paused) audio.pause();
+    } else if (!isActive()) {
+      // Preserve eligibility across blur -> hidden -> pagehide. A second event
+      // must not forget that the first event already paused a playing track.
+      if (!audio.paused) {
+        if (!manuallyPaused && !blocked && !failed) automaticallyPaused = true;
+        audio.pause();
+      }
+    } else if (automaticallyPaused && !blocked && !failed && !pending) {
+      automaticallyPaused = false;
+      void tryPlay();
+    }
+    render();
+  }
+
   listen(button, 'click', () => {
     if (!failed && (pending || !audio.paused)) {
       manuallyPaused = true;
+      automaticallyPaused = false;
       savePreference('paused');
       audio.pause();
       render();
       return;
     }
     manuallyPaused = false;
+    automaticallyPaused = false;
     savePreference('playing');
     if (failed || audio.error) audio.load();
     void tryPlay();
@@ -125,8 +155,15 @@
   if (opener) listen(opener, 'click', () => {
     if (!manuallyPaused && !failed) void tryPlay();
   });
-  ['playing', 'pause'].forEach((event) => listen(audio, event, render));
-  listen(audio, 'error', () => { failed = true; render(); });
+  listen(audio, 'playing', () => { synchronizePlayback(); });
+  listen(audio, 'pause', render);
+  listen(audio, 'error', () => { failed = true; automaticallyPaused = false; render(); });
+  listen(document, 'visibilitychange', () => {
+    if (document.visibilityState === 'visible') windowFocused = document.hasFocus();
+    synchronizePlayback();
+  });
+  listen(window, 'blur', () => { windowFocused = false; synchronizePlayback(); });
+  listen(window, 'focus', () => { windowFocused = true; synchronizePlayback(); });
   listen(window, 'scroll', scheduleLayout, { passive: true });
   listen(window, 'resize', scheduleLayout, { passive: true });
   if (window.visualViewport) {
@@ -137,8 +174,8 @@
   dialogs.forEach((dialog) => dialogObserver.observe(dialog, { attributes: true, attributeFilter: ['open'] }));
 
   listen(window, 'pagehide', (event) => {
-    resumeOnReturn = !audio.paused && !manuallyPaused;
-    audio.pause();
+    pageSuspended = true;
+    synchronizePlayback();
     if (!event.persisted) {
       disposed = true;
       dialogObserver.disconnect();
@@ -148,9 +185,11 @@
   });
   listen(window, 'pageshow', (event) => {
     if (!event.persisted) return;
-    manuallyPaused = readPreference() === 'paused';
-    if (!manuallyPaused && resumeOnReturn) void tryPlay();
-    render();
+    pageSuspended = false;
+    windowFocused = document.hasFocus();
+    const preference = readPreference();
+    if (preference === 'paused' || preference === 'playing') manuallyPaused = preference === 'paused';
+    synchronizePlayback();
   });
   render();
   if (!manuallyPaused) void tryPlay();

@@ -1,7 +1,7 @@
-﻿const {test}=require('node:test');const assert=require('node:assert/strict');const fs=require('node:fs');const vm=require('node:vm');
+const {test}=require('node:test');const assert=require('node:assert/strict');const fs=require('node:fs');const vm=require('node:vm');
 const source=fs.readFileSync('js/music.js','utf8');
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
-function setup({preference=null,blocked=false,missing=false,deferred=false,storageFails=false,withOpener=true,protectedRect=null}={}){
+function setup({preference=null,blocked=false,missing=false,deferred=false,storageFails=false,withOpener=true,protectedRect=null,focused=true,visibility='visible'}={}){
  class Target{
   constructor(){this.events=new Map();this.attrs={};this.hidden=false;this.dataset={};this.styles={};this.style={setProperty:(key,value)=>{this.styles[key]=value;}};}
   addEventListener(name,fn){if(!this.events.has(name))this.events.set(name,new Set());this.events.get(name).add(fn);}
@@ -22,10 +22,10 @@ function setup({preference=null,blocked=false,missing=false,deferred=false,stora
  const values=new Map(preference?[['nico-kaye-music',preference]]:[]);
  const window=new Target();window.innerHeight=800;window.localStorage={getItem:key=>{if(storageFails)throw Error('Blocked');return values.get(key)||null;},setItem:(key,value)=>{if(storageFails)throw Error('Blocked');values.set(key,value);}};window.requestAnimationFrame=fn=>{const id=++frameId;frames.set(id,fn);return id;};window.cancelAnimationFrame=id=>frames.delete(id);window.visualViewport=new Target();
  class Observer{constructor(callback){this.callback=callback;this.disconnected=false;observers.push(this);}observe(){}disconnect(){this.disconnected=true;}}
- const document={body,getElementById:id=>id==='wedding-music'?audio:id==='invitation-open'&&withOpener?opener:null,createElement:()=>player,querySelectorAll:selector=>selector==='dialog'?[dialog]:[protectedControl]};
+ const document=Object.assign(new Target(),{body,visibilityState:visibility,hasFocus:()=>focused,getElementById:id=>id==='wedding-music'?audio:id==='invitation-open'&&withOpener?opener:null,createElement:()=>player,querySelectorAll:selector=>selector==='dialog'?[dialog]:[protectedControl]});
  const context={window,document,MutationObserver:Observer};vm.runInNewContext(source,context);
  const flush=()=>{for(const [id,fn]of [...frames]){frames.delete(id);fn();}};
- return {audio,player,parts,opener,dialog,window,values,body,observers,flush,reinitialize:()=>vm.runInNewContext(source,context),allow:()=>{blocked=false;missing=false;},fail:()=>{audio.error={code:4};missing=true;audio.emit('error');},resolve:()=>resolvePlay(),reject:()=>rejectPlay(Error('Aborted'))};
+ return {audio,player,parts,opener,dialog,window,document,values,body,observers,flush,setVisibility:value=>{document.visibilityState=value;document.emit('visibilitychange');},setFocus:value=>{focused=value;window.emit(value?'focus':'blur');},block:()=>{blocked=true;},reinitialize:()=>vm.runInNewContext(source,context),allow:()=>{blocked=false;missing=false;},fail:()=>{audio.error={code:4};missing=true;audio.emit('error');},resolve:()=>resolvePlay(),reject:()=>rejectPlay(Object.assign(Error('Aborted'),{name:'AbortError'}))};
 }
 test('autoplay allowed: one looping audio at 25 percent; duplicate script initialization is ignored',async()=>{
  const app=setup();await tick();assert.equal(app.audio.playCalls,1);assert.equal(app.audio.loop,true);assert.equal(app.audio.preload,'metadata');assert.equal(app.audio.volume,.25);assert.equal(app.parts.get('button').attrs['aria-label'],'Pause background music');app.reinitialize();assert.equal(app.body.children.length,1);assert.equal(app.audio.playCalls,1);
@@ -63,4 +63,49 @@ test('page exit pauses playback and cleans listeners; bfcache return can resume 
 test('both pages reference exactly one existing audio source with metadata preload and looping',()=>{
  const path='assets/playlist/Palagi - By TJ.mp3';assert.ok(fs.statSync(path).size>0);
  for(const file of ['index.html','invite.html']){const html=fs.readFileSync(file,'utf8');assert.equal((html.match(/id="wedding-music"/g)||[]).length,1);assert.ok(html.includes('src="'+path+'" preload="metadata" loop'));assert.equal((html.match(/src="js\/music.js"/g)||[]).length,1);}
+});
+
+test('tab hiding pauses and returns resume from the same position only when visible AND focused',async()=>{
+ const app=setup();await tick();app.audio.currentTime=42;
+ app.setFocus(false);assert.equal(app.audio.paused,true);assert.equal(app.parts.get('button').attrs['aria-pressed'],'false');
+ app.setVisibility('hidden');app.setFocus(true);await tick();assert.equal(app.audio.playCalls,1);assert.equal(app.audio.paused,true);
+ app.setFocus(false);app.setVisibility('visible');await tick();assert.equal(app.audio.playCalls,1);
+ app.setFocus(true);await tick();assert.equal(app.audio.paused,false);assert.equal(app.audio.currentTime,42);assert.equal(app.audio.playCalls,2);assert.equal(app.parts.get('button').attrs['aria-pressed'],'true');
+ assert.equal(app.values.has('nico-kaye-music'),false);
+});
+test('minimizing or switching apps pauses even if the tab is still reported visible',async()=>{
+ const app=setup();await tick();app.setFocus(false);app.window.emit('blur');await tick();assert.equal(app.document.visibilityState,'visible');assert.equal(app.audio.paused,true);assert.equal(app.audio.playCalls,1);
+ app.setFocus(true);app.window.emit('focus');await tick();assert.equal(app.audio.paused,false);assert.equal(app.audio.playCalls,2);
+});
+test('manual pause survives all auto-resume events and requires explicit Play',async()=>{
+ const app=setup();await tick();app.parts.get('button').emit('click');const calls=app.audio.playCalls;
+ for(let i=0;i<4;i++){app.setFocus(false);app.setVisibility('hidden');app.setVisibility('visible');app.setFocus(true);}
+ app.opener.emit('click');await tick();assert.equal(app.audio.paused,true);assert.equal(app.audio.playCalls,calls);assert.equal(app.values.get('nico-kaye-music'),'paused');
+ app.parts.get('button').emit('click');await tick();assert.equal(app.audio.paused,false);assert.equal(app.audio.playCalls,calls+1);
+});
+test('originally blocked autoplay does not retry merely because visibility or focus returns',async()=>{
+ const app=setup({blocked:true});await tick();app.allow();app.setFocus(false);app.setVisibility('hidden');app.setVisibility('visible');app.setFocus(true);await tick();
+ assert.equal(app.audio.playCalls,1);assert.equal(app.audio.paused,true);assert.equal(app.parts.get('.music-player__hint').hidden,false);
+ app.parts.get('button').emit('click');await tick();assert.equal(app.audio.playCalls,2);assert.equal(app.audio.paused,false);
+});
+test('rapid activity switching during a pending play neither overlaps requests nor leaves hidden playback',async()=>{
+ const app=setup({deferred:true});app.setFocus(false);app.setVisibility('hidden');app.setVisibility('visible');app.setFocus(true);app.setFocus(false);
+ assert.equal(app.audio.playCalls,1);app.resolve();await tick();assert.equal(app.audio.paused,true);assert.equal(app.audio.playCalls,1);
+ app.setFocus(true);app.window.emit('focus');assert.equal(app.audio.playCalls,2);app.resolve();await tick();assert.equal(app.audio.paused,false);
+ app.setVisibility('hidden');assert.equal(app.audio.paused,true);
+});
+test('an aborted pending attempt resumes once it settles if the user already returned',async()=>{
+ const app=setup({deferred:true});app.setFocus(false);app.setFocus(true);assert.equal(app.audio.playCalls,1);app.reject();await tick();assert.equal(app.audio.playCalls,2);app.resolve();await tick();assert.equal(app.audio.paused,false);
+});
+test('rejected automatic resume returns to the play prompt without a retry loop',async()=>{
+ const app=setup();await tick();app.block();app.setFocus(false);app.setFocus(true);await tick();assert.equal(app.audio.paused,true);assert.equal(app.audio.playCalls,2);assert.equal(app.parts.get('.music-player__hint').hidden,false);
+ for(let i=0;i<4;i++){app.setFocus(false);app.setFocus(true);}await tick();assert.equal(app.audio.playCalls,2);
+ app.allow();app.parts.get('button').emit('click');await tick();assert.equal(app.audio.paused,false);
+});
+test('initially hidden or unfocused pages never start audio on their own',async()=>{
+ for(const config of [{visibility:'hidden'},{focused:false}]){const app=setup(config);await tick();assert.equal(app.audio.playCalls,0);app.setVisibility('visible');app.setFocus(true);await tick();assert.equal(app.audio.playCalls,0);app.parts.get('button').emit('click');await tick();assert.equal(app.audio.paused,false);}
+});
+test('pause intent survives bfcache with unavailable storage, and visibility listeners are cleaned on exit',async()=>{
+ const app=setup({storageFails:true});await tick();app.parts.get('button').emit('click');app.window.emit('pagehide',{persisted:true});app.window.emit('pageshow',{persisted:true});app.opener.emit('click');await tick();assert.equal(app.audio.playCalls,1);assert.equal(app.audio.paused,true);
+ app.window.emit('pagehide',{persisted:false});assert.equal(app.document.events.get('visibilitychange').size,0);assert.equal(app.window.events.get('focus').size,0);assert.equal(app.window.events.get('blur').size,0);
 });
