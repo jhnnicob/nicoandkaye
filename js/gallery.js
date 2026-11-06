@@ -1,6 +1,6 @@
 const thumbnailFilenames = [
   'thumbnail3.jpg',
-  'thumbnail1.jpg',
+  'img5.jpg',
   'gallery011.jpg',
   'thumbnail5.jpg',
 ];
@@ -10,7 +10,6 @@ const additionalFilenames = [
   'img2.jpg',
   'img3.jpg',
   'img4.jpg',
-  'img5.jpg',
   'img6.jpg',
   'img7.jpg',
   'MM-115.jpg',
